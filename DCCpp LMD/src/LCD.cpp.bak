@@ -1,0 +1,371 @@
+
+#include "LCD.h"
+
+#ifdef USE_LCD //Evita cargar la librería si #define USE_LCD no esta activo en DCCpp.h 
+// 0x3F
+
+//   0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
+// 0 #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #
+// 1 #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #
+//
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(LCD_ADDRESS, 16, 2);
+
+
+#define ACTUALIZA_INFO 250  //la pantalla se actualiza cada 250ms
+#define PAUSA_          24  // Pausa de 6 segundos para mostrar la información. 4x6 = 24
+
+bool on_off = false;
+int cab = 0;
+int velocidad = 0;
+int direccion = 0;
+int nId = 0;
+int address = 0;
+int subAddress = 0;
+int tStatus = 0;
+int idsensor = 0;
+int pinsensor = 0;
+int estadosensor = 0;
+int idsalida = 0;
+int pinsalida = 0;
+int estadosalida = 0;
+String pantalla1cadena1 = "";
+String pantalla1cadena2 = "";
+String pantalla1cadena3 = "";
+int pantallaLCD = 0;
+int timerpantallaLCD = 0;
+float lcdCurrent = 0.00;
+long previousMillisLCD = 0;
+const long intervalLCD = ACTUALIZA_INFO;
+
+void LCD::init() { // Inicia la pantalla
+    for (int x=0; x<2; x++){  // Bucle para repetir 3 veces.
+    lcd.noBacklight();  // Apaga el backlight
+    lcd.clear();
+    delay(500); // Pausa de 500ms.
+    lcd.backlight();  // Enciende el backlight.
+    delay(500); // Pausa de 500ms.
+  }
+  lcd.begin(); // OLED_ADDRESS en Config.h
+  lcd.setCursor(2,0);
+  lcd.print(F("DCC++"));
+  lcd.setCursor(9,0);
+  lcd.print (VERSION);
+  delay(2000);
+  lcd.clear();
+
+}
+
+void LCD::LCDinitScreen() {
+   LCDstartScreen();
+
+  if (on_off) {
+    lcd.setCursor(0, 0);
+
+    lcd.print(F("ON"));
+    // CAB
+    //lcd.setCursor(0, 0);
+    lcd.print(F(" T:"));
+    //lcd.setCursor(3, 1);
+    lcd.print(cab);
+    lcd.print(F(" "));    
+    lcd.print(velocidad);
+    lcd.print(F(" "));
+    if (direccion) lcd.print(F(">>"));
+    else lcd.print(F("<<"));
+    // accessorios:
+    lcd.setCursor(0, 1);
+    lcd.print("A:");
+    lcd.print(address);
+    lcd.print(" ");
+    lcd.print(subAddress);
+    lcd.print(" ");
+    if (tStatus == 0) lcd.print(F("C"));
+    else lcd.print(F("O"));
+    // sensores:
+    lcd.print(F(" S:"));
+    lcd.print(idsensor);
+    lcd.print(" ");
+    lcd.print(pinsensor);
+    lcd.print(" ");
+    lcd.print(estadosensor);
+    // Pines de Salida
+    lcd.print(F(" O:"));
+    lcd.print(idsalida);
+    lcd.print(F(" "));
+    lcd.print(pinsalida);
+    lcd.print(F(" "));
+    lcd.print(estadosalida);
+
+//    display.setCursor(34, 56);
+//    display.print("I= ");
+//    display.setCursor(48, 56);
+//    display.print(current);
+//    display.setCursor(67, 56);
+//    display.print(" mA");
+//    display.display();
+        lcd.backlight();  // enciende el backlight
+
+  } else {        //PANTALLA INICIAL
+        lcd.noBacklight();  // Apaga el backlight
+
+
+    // lcd.setCursor(0, 0);  
+    // lcd.print(F("DCC++")); 
+    lcd.setCursor(0, 0); 
+    lcd.print("OFF");
+    lcd.setCursor(4, 0);
+    lcd.print(F("V:")); 
+    lcd.setCursor(6, 0);
+    lcd.print(VERSION);
+    int cab = 0;
+	int velocidad = 0;
+	int direccion = 0;
+    lcd.setCursor(0, 1); 
+#if COMM_TYPE == 0                 // Serial Selected
+    lcd.print(COMM_NAME);
+#elif COMM_TYPE == 1          // Ethernet Shield Card Selected
+    lcd.print(COMM_SHIELD_OLED_NAME);
+#endif
+    //lcd.setCursor(0, 1); 
+    //lcd.print(F("D:")); lcd.print(EEStore::data.nTurnouts);
+    //lcd.print(F(" S:")); lcd.print(EEStore::data.nSensors);
+    //lcd.print(F(" O:")); lcd.print(EEStore::data.nOutputs);
+  }
+}
+
+void LCD::updateLCD() {
+
+  unsigned long currentMillisLCD = millis();
+  if (currentMillisLCD - previousMillisLCD >= intervalLCD) {
+    previousMillisLCD = currentMillisLCD;
+    if (timerpantallaLCD >= 0) { //si el temporizador es mayor que 0 selecciona una de las pantallas
+
+      switch (pantallaLCD) { // Selecciona la pantalla que segun la acción.Definir/Eliminar/editar...
+        case 1:                 //pantalla elemento
+          LCD::pantalla1();
+          break;
+        case 2:                 //Pantalla error
+          LCD::pantalla2();
+          break;
+        case 3:
+          LCD::pantalla3();
+          break;
+        case 4:
+          LCD::pantalla4();
+          break;
+        case 5:
+          LCD::pantalla5();
+          break;
+        default: //por defecto la pantalla siempre en modo inicio
+          break;
+      }
+      timerpantallaLCD--;
+      
+    } else { //Si el temporizador es = o menor que 0 muestra la pantalla inicial
+      
+     LCD::LCDinitScreen();
+    }
+  }
+}
+void LCD::LCDshowLCDOn(bool onOff) {
+  on_off = onOff;
+  timerpantallaLCD = 0;
+  lcd.clear();
+}
+
+void LCD::LCDcurrentShow(float inCurrent){
+  lcdCurrent = inCurrent;
+  LCDstartScreen();
+}
+
+void LCD::pantalla1() { //Corresponde a printDefined
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(pantalla1cadena1);     //2KB para UNO - 8KB para MEGA
+  lcd.setCursor(0, 1);
+  lcd.print(pantalla1cadena2);
+  //lcd.print(pantalla1cadena3);
+}
+
+void LCD::pantalla2() { //Corresponde a Error
+
+}
+void LCD::pantalla3() { //Corresponde a Error
+}
+void LCD::pantalla4() { //Corresponde a Sram
+  
+  lcd.clear();
+  lcd.setCursor(1,0);
+  lcd.print(pantalla1cadena1);     //2KB para UNO - 8KB para MEGA
+  lcd.setCursor(2, 1);
+  lcd.print(pantalla1cadena2);
+  lcd.print(pantalla1cadena3);
+}
+
+void LCD::pantalla5() { //Corresponde a Error
+}
+
+void LCD::LCDprintList(int option, int n) {
+	LCDstartScreen();
+	String a = "Numero de ";
+	switch (option){
+		case 1:
+			pantalla1cadena1 = a + "Desvios";
+			pantalla1cadena2 = (String)n;
+		break;
+		case 2:
+			pantalla1cadena1 = a + "Sensores";
+			pantalla1cadena2 = (String)n;
+		break;
+		case 3:
+			pantalla1cadena1 = a + "Salidas";
+			pantalla1cadena2 = (String)n;
+		break;
+	}
+  timerpantallaLCD = PAUSA_;
+  pantallaLCD = 5; //Pantalla para mostrar elemento definido		
+}
+
+void LCD::LCDprintThrottle(int tCab, int vel, int direc) {
+  cab = tCab;
+  velocidad = vel;
+  direccion = direc;
+  LCDstartScreen();
+}
+
+void LCD::LCDprintAccesories(int addr, int subAddr, int Status) {
+  address = addr;
+  subAddress = subAddr;
+  tStatus = Status;
+  LCDstartScreen();
+}
+
+void LCD::LCDprintDefined(int option, int n, int s, int m) {
+  LCDstartScreen();
+  Serial.println (n);
+  Serial.println (s);
+  Serial.println (m);
+  switch (option) {
+    case 1:
+      pantalla1cadena1 = "Desvio definido";
+      pantalla1cadena2 = (String) "id: " + n + " D: " + s + " S: " + m;
+      Serial.println (pantalla1cadena2);
+      break;
+    case 2:
+      pantalla1cadena1 = "Sensor definido";
+      pantalla1cadena2 = (String) "id: " + n + " Pin: " + s + " P: " + m;
+      break;
+    case 3:
+      pantalla1cadena1 = "Salida definida";
+      pantalla1cadena2 = (String) "id: " + n + " Pin: " + s + " F: " + m;
+      break;
+  }
+
+  //pantalla1cadena2 = "con exito";
+  timerpantallaLCD = PAUSA_;
+  pantallaLCD = 1; //Pantalla para mostrar elemento definido
+}
+
+void LCD::LCDprintSaved( int option, bool estado) {
+  pantalla1cadena3 = "";
+  LCDstartScreen();
+  if (estado) {
+    pantalla1cadena1 = "Memoria Guardada";
+    pantalla1cadena2 = "Con exito";
+  } else {
+    pantalla1cadena1 =  "Error";
+    pantalla1cadena2 =  "Almacenando";
+  }
+  pantallaLCD = 1; //Pantalla para mostrar elemento guardado
+  timerpantallaLCD = PAUSA_;
+}
+
+void LCD::LCDprintDelete(int option, boolean estado, int n) {
+  pantalla1cadena3 = "";
+  String id = (String)n;
+  String a = " Eliminado";
+  LCDstartScreen();
+  if (!estado) pantalla1cadena1 = "Error al elimnar";
+  else pantalla1cadena2 = "Con exito";
+  switch (option) {
+    case 1:
+      if (estado) pantalla1cadena1 = "Desvio " + id + a;
+      else pantalla1cadena2 = "Desvio " + id;
+      break;
+    case 2:
+      if (estado) pantalla1cadena1 = "Sensor " + id + a ;
+      else pantalla1cadena2 = "Sensor " + id;
+      break;
+    case 3:
+      if (estado) pantalla1cadena1 = "Salida" + id + a + "eliminada";
+      else pantalla1cadena2 = "Salida " + id;
+      break;
+  }
+  	timerpantallaLCD = PAUSA_; 
+	pantallaLCD = 2;
+}
+
+void LCD::LCDprintDeleteMemory() {  //Comando <e> /***** BORRA LA CONFIGURACION DE LA EEPROM  ****/
+
+  pantalla1cadena1 = "Memoria";
+
+  pantalla1cadena2 =  "Eliminada";
+  pantalla1cadena3 =  "";
+  timerpantallaLCD = PAUSA_;
+  pantallaLCD = 3; //Pantalla para mostrar 'memoria borrada'
+}
+
+void LCD::LCDprintErrorOptionEmpty(int option) {
+  LCDstartScreen();
+  switch (option) {
+    case 1:
+      pantalla1cadena1 = "No hay Desvios";
+      break;
+    case 2:
+      pantalla1cadena1 = "No hay Sensores";
+      break;
+    case 3:
+      pantalla1cadena1 = "No hay Salidas";
+      break;
+  }
+  pantalla1cadena2 = "definidos";
+  timerpantallaLCD = PAUSA_;
+  pantallaLCD = 1; //Pantalla para mostrar elemento definido
+}
+
+void LCD::LCDprintErrorOptionUndefined(int option) {
+  LCDstartScreen();
+  switch (option) {
+    case 1:
+      pantalla1cadena1 = "No hay Desvio";
+      break;
+    case 2:
+      pantalla1cadena1 = "No hay Sensor";
+      break;
+    case 3:
+      pantalla1cadena1 = "No hay Salida";
+      break;
+  }
+  pantalla1cadena2 = "definido ";
+  pantalla1cadena3 = "";  
+  timerpantallaLCD = PAUSA_;
+  pantallaLCD = 1; //Pantalla para mostrar elemento definido
+}
+
+void LCD::LCDprintSram(int ram) {  //Comando <F> INTENTOS PARA DETERMINAR CUANTA SRAM LIBRE ESTA DISPONIBLE EN ARDUINO  ****/
+  pantalla1cadena1  = "Mem. disponible:";     //2KB para UNO - 8KB para MEGA
+  pantalla1cadena2  = (String) ram;
+  pantalla1cadena3  = " bytes";
+  timerpantallaLCD = PAUSA_;
+  pantallaLCD = 4; //Pantalla para mostrar el estado de la memoria Sram
+}
+
+void LCD::LCDstartScreen() {
+	/*pantalla1cadena1 = "";
+	pantalla1cadena2 = "";
+	pantalla1cadena3 = "";
+	lcd.clear();*/
+}
+#endif
