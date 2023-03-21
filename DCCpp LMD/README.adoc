@@ -1,8 +1,6 @@
-= DCCpp extension Library for Arduino =
+= DCCpp LMD Librería para Arduino =
 
-This is the library version of a program for Arduino to control railroading DCC devices.
 
-In extras folder, click on Doc/index.html to have a complete documentation in English in your browser.
 
 == License ==
 
