@@ -3,11 +3,16 @@
 Diseñada para placa Arduino MEGA con pantalla Oled y multiples puertos seriales:
 
 *- Pantalla Oled con librería U8G2lib
+
 *- Serial -> PC
+
 *- Serial1 -> Wifi
+
 *- Serial2 -> Bluetooth
+
 *- Serial3 -> Serial Auxiliar
-*- Sonido en <strong>pin 6</strong> 
+
+*- Sonido en pin 6 
 
 
 == License ==
