@@ -18,7 +18,7 @@ Diseñada para placa Arduino MEGA con pantalla Oled y multiples puertos seriales
 </strong>
 
 
-![alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/DCCpp_Mega_OledSSD1306_12.jpg?raw=true)
+![alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/DCCpp_Mega_oledESP8266Buzzmax471.jpg?raw=true)
 
 
 
