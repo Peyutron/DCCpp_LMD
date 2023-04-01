@@ -41,13 +41,17 @@ Nos podemos ahorrar el soldar componentes ya que para el módulo <strong>ESP-01<
 ![alt text](https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/Modulo_serial_ESP8266.jpg?raw=true "Adaptador ESP-01")
 
 
+
 Con el pequeño parlante podremos percibir de una manera mas intuitiva si algo va bien o mal en la cental, cuenta con sonidos para <strong>encendido/apagado</strong> y <strong>confirmación o fallo</strong>
 Estos se pueden modificar en el archivo <em>Sound.cpp</em>
 
 
 Versión 2.0.1 DCCpp LMD 2023  01/04/2023
 
+
 DCCpp modificado por Peyutron. Todos los cambios y montajes estan basados en un circuito general. Es recomendable echar un ojo al datasheet y a los pines de conexión ya que dependeran del fabricante. No nos hacemos responsables de posibles fallos. Todas las modificaciones son bajo tu propia responsabilidad.
+
+
 
 
 License
