@@ -1,4 +1,4 @@
-CCpp LMD Librería DCC++ para Arduino
+== DCCpp LMD Librería DCC++ para Arduino ==
 
 Que es y para que sirve DCCpp LMD?
 
@@ -24,7 +24,8 @@ DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduin
 
 
 
-== License ==
+
+Original:
 
 Copyright (c) 2017/2020 Locoduino.org. All right reserved.
 Copyright (c) 2017/2020 Thierry Paris.  All right reserved.
