@@ -1,4 +1,4 @@
-# DCCpp-LMD
+# DCCpp_LMD
 
 DCCpp LMD Librería DCC++ para Arduino
 
