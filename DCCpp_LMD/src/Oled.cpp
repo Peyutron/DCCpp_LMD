@@ -24,6 +24,7 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 
 bool on_off = false;
 String serialIn = "<  >";
+String wifiIp = " ";
 
 int timerpantalla = 0;
 int cab = 0;
@@ -111,17 +112,19 @@ void Oled::initScreen() { // Oled.cpp (interno)
     u8g2.print(F("DCC++ "));
     u8g2.print(F("OFF"));
     u8g2.setFont(u8g2_font_7x13_tr); // choose a suitable font
-    u8g2.setCursor(10,30);
+    u8g2.setCursor(5,30);
     u8g2.print(F("OLED: "));
     u8g2.print(OLED_NAME);
-    u8g2.setCursor(10, 45);
-    u8g2.print(F("com: "));
-#if COMM_TYPE == 0          // Serial Selected
-    u8g2.print(COMM_NAME);
-#elif COMM_TYPE == 1        // Ethernet Shield Card Selected
-    u8g2.print(COMM_SHIELD_OLED_NAME);
-#endif
-    u8g2.setCursor(10, 60);
+    u8g2.setCursor(5, 45);
+    if (wifiIp.equals(" ")){
+      u8g2.print(F("com: "));  
+  #if COMM_TYPE == 0          // Serial Selected
+      u8g2.print(COMM_NAME);
+  #elif COMM_TYPE == 1        // Ethernet Shield Card Selected
+      u8g2.print(COMM_SHIELD_OLED_NAME);
+  #endif
+    } else u8g2.print(wifiIp); // wifi WebSocket conectado
+    u8g2.setCursor(5, 60);
     u8g2.print("D:  ");  u8g2.print(EEStore::data.nTurnouts);
     u8g2.print(" S:  "); u8g2.print(EEStore::data.nSensors);
     u8g2.print(" O:  "); u8g2.print(EEStore::data.nOutputs);
@@ -174,6 +177,13 @@ void Oled::GetOutput(int num, int Pin, int state) { // Output::activate
   pinsalida = Pin;
   estadosalida = state;
 }
+
+#ifdef USE_SERIALWIFI
+void Oled::printWifiIp(String ip) { // Muestra la IP del Websocket comando "I" TextCommand.cpp
+  wifiIp = ip;
+}
+#endif
+
 
 void Oled::printReadCv(int cv, int resultado){
   // TODO
