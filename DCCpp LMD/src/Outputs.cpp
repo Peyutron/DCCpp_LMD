@@ -91,7 +91,7 @@ void Output::activate(int s){
 if(data.oStatus==0)
   CommManager::printf("<Y%d %d>", data.id, 0);	 
  else
-  CommManager::printf("<Y%d %d>", data.id, 0);	 
+  CommManager::printf("<Y%d %d>", data.id, 1);	 
 
 #ifdef USE_OLED
 	Oled::GetOutput(this->data.id, this->data.pin, this->data.oStatus); // OLED
