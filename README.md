@@ -1,9 +1,15 @@
 # DCCpp-LMD
 
 DCCpp LMD Librería DCC++ para Arduino
-Diseñada para placa Arduino MEGA con pantalla Oled y multiples puertos seriales:
+
+Que es y para que sirve DCCpp LMD?
+
+DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduino MEGA cuenta con diferentes añadidos como pantalla Oled, sonido y multiples puertos seriales. Con esta versión podemos utilizar todos los puertos al mismo tiempo para mandar o recibir los comandos de la central.
+
+
 
 <strong>
+  
 *- Pantalla Oled con librería U8G2lib
 
 *- Serial → PC
@@ -15,7 +21,11 @@ Diseñada para placa Arduino MEGA con pantalla Oled y multiples puertos seriales
 *- Serial3 → Serial Auxiliar
 
 *- Sonido en pin 6
+  
 </strong>
+
+
+
 
 ![alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/ardumoto-l298p_pines.jpg?raw=true "Shield Ardumoto")
 
@@ -23,6 +33,17 @@ Diseñada para placa Arduino MEGA con pantalla Oled y multiples puertos seriales
 
 ![alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/DCCpp_Mega_oledESP8266Buzzmax471.jpg?raw=true "DCCpp Wifi" )
 
+
+Nos podemos ahorrar el soldar componentes ya que para el módulo <strong>ESP-01</strong> existe un adaptador para tener una conexión Rx/Tx con alimentación a 5V 
+
+[!alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/Modulo_serial_ESP8266.jpg?raw=true "Adaptador ESP-01")
+
+
+Con el pequeño parlante podremos percibir de una manera mas intuitiva si algo va bien o mal en la cental, cuenta con sonidos para <strong>encendido/apagado</strong> y <strong>confirmación o fallo</strong>
+Estos se pueden modificar en el archivo <em>Sound.cpp</em>
+
+
+Versión 2.0.1 DCCpp LMD 2023. 01/04/2023
 
 
 License
