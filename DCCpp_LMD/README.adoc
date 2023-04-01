@@ -5,8 +5,6 @@ Que es y para que sirve DCCpp LMD?
 DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduino MEGA cuenta con diferentes añadidos como pantalla Oled, sonido y multiples puertos seriales. Con esta versión podemos utilizar todos los puertos al mismo tiempo para mandar o recibir los comandos de la central.
 
 
-
-<strong>
   
 *- Pantalla Oled con librería U8G2lib
 
@@ -20,7 +18,6 @@ DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduin
 
 *- Sonido en pin 6
   
-</strong>
 
 
 
