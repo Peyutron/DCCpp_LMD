@@ -661,7 +661,7 @@ case 'D':
 	#ifdef USE_SERIALWIFI	
 		case 'I':
 		#ifdef USE_OLED
-			Oled::GetWifiIp(com + 1);
+			Oled::printWifiIp(com + 1);
 		#endif
 			return true;
 	#endif
