@@ -17,11 +17,11 @@ Diseñada para placa Arduino MEGA con pantalla Oled y multiples puertos seriales
 *- Sonido en pin 6
 </strong>
 
-![alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/ardumoto-l298p_pines.jpg?raw=true)
+![alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/ardumoto-l298p_pines.jpg?raw=true "Shield Ardumoto")
 
 
 
-![alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/DCCpp_Mega_oledESP8266Buzzmax471.jpg?raw=true)
+![alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/DCCpp_Mega_oledESP8266Buzzmax471.jpg?raw=true "DCCpp Wifi" )
 
 
 
