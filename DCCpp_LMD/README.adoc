@@ -1,11 +1,28 @@
-= DCCpp extension Library for Arduino =
+CCpp LMD Librería DCC++ para Arduino
 
-This is the library version of a program for Arduino to control railroading DCC devices.
+Que es y para que sirve DCCpp LMD?
 
-For more information about this library please visit us at
-http://www.locoduino.org/spip.php?article228 in french or
+DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduino MEGA cuenta con diferentes añadidos como pantalla Oled, sonido y multiples puertos seriales. Con esta versión podemos utilizar todos los puertos al mismo tiempo para mandar o recibir los comandos de la central.
 
-In extras folder, click on Doc/index.html to have a complete documentation in English in your browser.
+
+
+<strong>
+  
+*- Pantalla Oled con librería U8G2lib
+
+*- Serial → PC
+
+*- Serial1 → Wifi
+
+*- Serial2 → Bluetooth
+
+*- Serial3 → Serial Auxiliar
+
+*- Sonido en pin 6
+  
+</strong>
+
+
 
 == License ==
 
