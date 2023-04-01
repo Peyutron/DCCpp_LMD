@@ -24,13 +24,14 @@ class Oled {
     static void GetAccesories(int, int, int);
     static void GetSensor(int, int);
     static void GetOutput(int, int, int);  
-
-    static void printSram (int);                  //Muestra en pantalla la cantidad de Sram disponible
-    static void printList(int, int);		//Muestra en numero de listados de un desvio / Sensor / Salida
-    static void printDefined(int, int, int, int); //Imprime en la pantalla que se ha definido un desvío
-    static void printSaved(bool);            //Imprime en la pantalla que se ha Guardado un desvío /Identificador/id/direccion/subdireccion
-    static void printDelete(int, bool, int);           //Imprime en pantalla que se ha eliminado un desvío /Identificador
-    static void printDeleteMemory();              //Aviso borrado de memoria
+    
+    static void printWifiIp(String);              // Muestra IP en pantall de inicio
+    static void printSram (int);                  // Muestra en pantalla la cantidad de Sram disponible
+    static void printList(int, int);		          // Muestra en numero de listados de un desvio / Sensor / Salida
+    static void printDefined(int, int, int, int); // Imprime en la pantalla que se ha definido un desvío
+    static void printSaved(bool);                 // Imprime en la pantalla que se ha Guardado un desvío /Identificador/id/direccion/subdireccion
+    static void printDelete(int, bool, int);      // Imprime en pantalla que se ha eliminado un desvío /Identificador
+    static void printDeleteMemory();              // Aviso borrado de memoria
     static void printErrorList(int);       //ERROR id no disponible
 
     // static void printErrorOptionUndefined(int);   //ERROR no definido
