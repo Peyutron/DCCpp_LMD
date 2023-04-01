@@ -26,7 +26,7 @@ DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduin
 
 En la pantalla Oled obtendremos información tales como desvíos y sensores almacenados en la EEPROM, comando recibido, estado del ultimo desvío/salida activadas. También muestra los datos de la última locomotora como ID, velocidad y dirección. Igualmente, cuando almacenemos o borremos algun elemento de la memoria EEPROM
 
-Para instalar la central DCCpp LMD solo hay que tener la librería DCCpp LMD en la carpeta <em>libraries</em> de Arduino. Luego abrimos el IDE de Arduino y en Ejemplos -> DCCppLMD -> 
+Para instalar la central DCCpp LMD solo hay que tener la librería DCCpp LMD en la carpeta <em>libraries</em> de Arduino. Luego abrimos el IDE de Arduino y en <em>Ejemplos -> DCCppLMD -> SerialBluetoothDCCpp</em>
 
 
 ![alt text](https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/ardumoto-l298p_pines.jpg?raw=true "Shield Ardumoto")
