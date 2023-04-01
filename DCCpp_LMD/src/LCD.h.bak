@@ -1,0 +1,38 @@
+#ifndef _LCD_h_
+#define _LCD_h_
+
+#include "Config.h"
+#include "DCCpp.h"
+
+class LCD {
+  public:
+    static void init();
+    static void LCDclear();
+    static void LCDinitScreen();
+    static void LCDshowLCDOn(bool);
+    static void LCDprintThrottle(int, int, int );
+    static void LCDprintAccesories(int, int, int);
+    static void LCDprintSensor(int, int, int);
+    static void LCDprintOutput(int, int, int);  
+    static void LCDcurrentShow(float);
+    static void LCDprintSram (int);                 // Muestra en pantalla la cantidad de Sram disponible
+    static void LCDprintList(int, int);				// Muestra en numero de listados de un desvio / Sensor / Salida
+    static void LCDprintDefined(int, int, int, int); //Imprime en la pantalla que se ha definido un desvío
+    static void LCDprintSaved(int, bool);           // Imprime en la pantalla que se ha Guardado un desvío /Identificador/id/direccion/subdireccion
+    static void LCDprintDelete(int, bool, int);     // Imprime en pantalla que se ha eliminado un desvío /Identificador
+    static void LCDprintDeleteMemory();             // Aviso borrado de memoria
+    static void LCDprintErrorOptionEmpty(int);      // ERROR id no disponible
+    static void LCDprintErrorOptionUndefined(int);  // ERROR no definido
+    static void LCDPresentacion();
+    static void updateLCD();                     //Actualiza la patalla desde loop();
+    static void pantalla1();
+    static void pantalla2();
+    static void pantalla3();
+    static void pantalla4();
+    static void pantalla5();
+
+  private:
+    static bool _enabled;
+    static void LCDstartScreen();
+};
+#endif
