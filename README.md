@@ -2,6 +2,7 @@
 
 DCCpp LMD Librería DCC++ para Arduino
 Diseñada para placa Arduino MEGA con pantalla Oled y multiples puertos seriales:
+
 <strong>
 *- Pantalla Oled con librería U8G2lib
 
@@ -15,6 +16,8 @@ Diseñada para placa Arduino MEGA con pantalla Oled y multiples puertos seriales
 
 *- Sonido en pin 6
 </strong>
+
+
 License
 Copyright (c) 2017/2020 Locoduino.org. All right reserved. Copyright (c) 2017/2020 Thierry Paris. All right reserved.
 
