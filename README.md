@@ -18,6 +18,10 @@ Diseñada para placa Arduino MEGA con pantalla Oled y multiples puertos seriales
 </strong>
 
 
+![alt text](https://github.com/Peyutron/DCCpp-LMD/blob/main/DCCpp%20LMD/extras/Images/DCCpp_Mega_OledSSD1306_12.jpg?raw=true)
+
+
+
 License
 Copyright (c) 2017/2020 Locoduino.org. All right reserved. Copyright (c) 2017/2020 Thierry Paris. All right reserved.
 
