@@ -658,7 +658,15 @@ case 'D':
 	 }
 	  DCCPP_INTERFACE.println("");
 		return true;
-
+	#ifdef USE_SERIALWIFI	
+		case 'I':
+		#ifdef USE_OLED
+			Oled::GetWifiIp(com + 1);
+		#endif
+			return true;
+	#endif
+		
+		
 	case 's':
 		/**	\addtogroup commandsGroup
 		STATUS OF DCC++ BASE STATION
@@ -745,7 +753,7 @@ case 'D':
 #endif
 		return true;
 
-	case 'i':     
+	case 'F':     
 		/**	\addtogroup commandsGroup
 		ATTEMPTS TO DETERMINE HOW MUCH FREE SRAM IS AVAILABLE IN ARDUINO
 		----------------------------------------------------------------
