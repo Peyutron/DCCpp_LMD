@@ -71,8 +71,7 @@ void EEStore::init(){
 ///////////////////////////////////////////////////////////////////////////////
 
 void EEStore::clear(){
- Serial.println("no borra?");   
-  sprintf(data.id,EESTORE_ID);  // create blank eeStore structure (no turnouts, no sensors) and save it back to EEPROM
+	sprintf(data.id,EESTORE_ID);  // create blank eeStore structure (no turnouts, no sensors) and save it back to EEPROM
 #ifdef USE_TURNOUT
   data.nTurnouts=0;
 #endif
