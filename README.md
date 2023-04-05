@@ -48,10 +48,21 @@ Con el pequeño parlante podremos percibir de una manera mas intuitiva si algo v
 Estos se pueden modificar en el archivo <em>Sound.cpp</em>
 
 
-Versión 2.0.1 DCCpp LMD 2023  01/04/2023
+\LMD 05/04/2023 V2.0.2
+  - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente (comandos <s>, <E> y <F>)
+
+\LMD 01/04/2023 V2.0.1
+- Datos seriales unificados en CommInterface.cpp
+- Implementación del puerto Serial1 como SerialWifi (SerialWifi.h) con WebSocket "ws://"
+- Implementación del puerto Serial2 como SerialBluetooth (SerialBluetooth.h)
+- Implementación del puerto Serial3 como SerialAUX (SerialAux.h)
+- Nueva librería U8G2lib probado en pantalla 
+  *- SSD1603 128x64
+- Monitor Serial en pantalla
+- Monitor de consumo 
 
 
-DCCpp modificado por Peyutron. Todos los cambios y montajes estan basados en un circuito general. Es recomendable echar un ojo al datasheet y a los pines de conexión ya que dependeran del fabricante. No nos hacemos responsables de posibles fallos. Todas las modificaciones son bajo tu propia responsabilidad.
+DCCpp modificado por Peyutron. Todos los cambios y montajes estan basados en un circuito general. Es recomendable mierar el datasheet y a los pines de conexión ya que dependeran del fabricante. No nos hacemos responsables de posibles fallos. Todas las modificaciones son bajo tu propia responsabilidad.
 
 
 
