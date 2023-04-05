@@ -259,7 +259,10 @@ WARNING: if this line is not present, some errors will be raised during compilat
 
 \page revPage Revision History
 
-\LMD V2.0.0
+\LMD 05/04/2023 V2.0.2
+  - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente
+
+\LMD 30/03/2023 V2.0.1
 - Datos seriales unificados en CommInterface.cpp
 - Implementación del puerto Serial1 como SerialWifi (SerialWifi.h) con WebSocket "ws://"
 - Implementación del puerto Serial2 como SerialBluetooth (SerialBluetooth.h)
@@ -268,7 +271,6 @@ WARNING: if this line is not present, some errors will be raised during compilat
   *- SSD1603 128x64
 - Monitor Serial en pantalla
 - Monitor de consumo 
-
 
 \par 08/11/2020 V1.4.2
 - Adaptation de la mesure de courant à l'ESP32.
