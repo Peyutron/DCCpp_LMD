@@ -23,6 +23,12 @@ extern unsigned int __heap_start;
 extern void *__brkval;
 #endif
 
+String serialInUse[4] = {"no", "no", "no"}; // Para CommInterface en comando 's'
+String info_vers;	// Para CommInterface en comando 's'
+String info_serial;	// Para CommInterface en comando 's'
+int nElemento[4] = {0, 0, 0}; 	// Para CommInterface en comando 'E'
+int v = 0;						// Para CommInterface en comando 'F'
+int memoria = 0;				// Para CommInterface en comando 'F'
 ///////////////////////////////////////////////////////////////////////////////
 
 char TextCommand::commandString[MAX_COMMAND_LENGTH+1];
@@ -472,7 +478,86 @@ switch(com[0]){
 		CommManager::printf("<a%d>", int(DCCpp::getCurrentMain()));
 		return true;
 
-	
+	case 's':
+		/**	\addtogroup commandsGroup
+		STATUS OF DCC++ BASE STATION
+		----------------------------
+		
+		<b>
+		\verbatim
+		<s>
+		\endverbatim
+		</b>
+
+		returns status messages containing track power status, throttle status, turn-out status, and a version number
+		NOTE: this is very useful as a first command for an interface to send to this sketch in order to verify connectivity and update any GUI to reflect actual throttle and turn-out settings
+    
+		returns: series of status messages that can be read by an interface to determine status of DCC++ Base Station and important settings
+		*/
+	if (DCCppConfig::SignalEnablePinMain == UNDEFINED_PIN || digitalRead(DCCppConfig::SignalEnablePinMain) == HIGH)
+		CommManager::printf("<p0>");
+	if (DCCppConfig::SignalEnablePinProg == UNDEFINED_PIN || digitalRead(DCCppConfig::SignalEnablePinProg) == HIGH)
+		CommManager::printf("<p1>");
+
+
+	 /* for(int i=1;i<=MAX_MAIN_REGISTERS;i++){
+		if(DCCpp::mainRegs.speedTable[i]==0)
+		  continue;
+		DCCPP_INTERFACE.print("<T");
+		DCCPP_INTERFACE.print(i); DCCPP_INTERFACE.print(" ");
+		if(DCCpp::mainRegs.speedTable[i]>0){
+		  DCCPP_INTERFACE.print(DCCpp::mainRegs.speedTable[i]);
+		  DCCPP_INTERFACE.print(" 1>");
+		} else{
+		  DCCPP_INTERFACE.print(- DCCpp::mainRegs.speedTable[i]);
+		  DCCPP_INTERFACE.print(" 0>");
+		}          
+#if !defined(USE_ETHERNET)
+		DCCPP_INTERFACE.println("");
+#endif
+	}*/
+
+	#ifdef USE_SERIALWIFI
+		serialInUse[0] = (String)WIFI;
+	#endif
+	#ifdef USE_SERIALBLUETOOTH
+		serialInUse[1] = (String)BLUETOOTH;
+	#endif
+	#ifdef USE_SERIALAUX
+		serialInUse[2] = (String)SERIALAUX;
+	#endif
+		
+	info_vers	= "<iDCCpp-LMD LIBRARY BASE STATION FOR ARDUINO V-" + (String)DCCPP_LIBRARY_VERSION + ">";
+	info_serial	= "<N Wifi: " + serialInUse[0] + " Bluetooth: " + serialInUse[1] +  " Aux: " + serialInUse[2]  + ">";
+	DCCPP_INTERFACE.print(info_vers);
+	DCCPP_INTERFACE.println(info_serial);
+
+	#ifdef USE_SERIALWIFI
+		WIFI.println(info_vers);
+		WIFI.println(info_serial);
+	#endif
+	#ifdef USE_SERIALBLUETOOTH
+		BLUETOOTH.println(info_vers);
+		BLUETOOTH.println(info_serial);
+	#endif
+	#ifdef USE_SERIALAUX
+		SERIALAUX.println(info_vers);
+		SERIALAUX.println(info_serial);
+	#endif
+
+
+#ifdef DCCPP_PRINT_DCCPP
+#ifdef USE_TURNOUT
+	  Turnout::show();
+#endif
+#ifdef USE_OUTPUT
+	  Output::show();
+#endif
+#ifdef USE_SENSOR
+	  Sensor::show();
+#endif
+#endif
+	return true;	
 
 #ifdef USE_EEPROM
 	case 'E':     
@@ -493,7 +578,17 @@ switch(com[0]){
 	 
 		EEStore::store();
 
-		CommManager::printf("<e%d %d %d>", EEStore::data.nTurnouts, EEStore::data.nSensors, EEStore::data.nOutputs);
+		#ifdef USE_TURNOUT
+			nElemento[0] = EEStore::data.nTurnouts;
+		#endif
+		#ifdef USE_SENSOR
+			nElemento[1] = EEStore::data.nSensors;
+		#endif
+		#ifdef USE_OUTPUT
+			nElemento[2] = EEStore::data.nOutputs;
+		#endif
+
+		CommManager::printf("<e%d %d %d>", nElemento[0], nElemento[1], nElemento[2]);
 
 		return true;
 
@@ -667,91 +762,7 @@ case 'D':
 	#endif
 		
 		
-	case 's':
-		/**	\addtogroup commandsGroup
-		STATUS OF DCC++ BASE STATION
-		----------------------------
-		
-		<b>
-		\verbatim
-		<s>
-		\endverbatim
-		</b>
 
-		returns status messages containing track power status, throttle status, turn-out status, and a version number
-		NOTE: this is very useful as a first command for an interface to send to this sketch in order to verify connectivity and update any GUI to reflect actual throttle and turn-out settings
-    
-		returns: series of status messages that can be read by an interface to determine status of DCC++ Base Station and important settings
-		*/
-	if (DCCppConfig::SignalEnablePinMain == UNDEFINED_PIN || digitalRead(DCCppConfig::SignalEnablePinMain) == HIGH)
-		CommManager::printf("<p0>");
-	if (DCCppConfig::SignalEnablePinProg == UNDEFINED_PIN || digitalRead(DCCppConfig::SignalEnablePinProg) == HIGH)
-		CommManager::printf("<p1>");
-	#if !defined(USE_ETHERNET)
-	  DCCPP_INTERFACE.println("");
-	#endif
-
-	  for(int i=1;i<=MAX_MAIN_REGISTERS;i++){
-		if(DCCpp::mainRegs.speedTable[i]==0)
-		  continue;
-		DCCPP_INTERFACE.print("<T");
-		DCCPP_INTERFACE.print(i); DCCPP_INTERFACE.print(" ");
-		if(DCCpp::mainRegs.speedTable[i]>0){
-		  DCCPP_INTERFACE.print(DCCpp::mainRegs.speedTable[i]);
-		  DCCPP_INTERFACE.print(" 1>");
-		} else{
-		  DCCPP_INTERFACE.print(- DCCpp::mainRegs.speedTable[i]);
-		  DCCPP_INTERFACE.print(" 0>");
-		}          
-#if !defined(USE_ETHERNET)
-		DCCPP_INTERFACE.println("");
-#endif
-	}
-	//CommManager::printf("<iDCCpp LIBRARY BASE STATION FOR ARDUINO>");
-	String ser1 = "no";
-	String ser2 = "no";
-	String ser3 = "no";
-	#ifdef USE_SERIALWIFI
-		ser1 = (String)WIFI;
-	#endif
-	#ifdef USE_SERIALBLUETOOTH
-		ser2 = (String)BLUETOOTH;
-	#endif
-	#ifdef USE_SERIALAUX
-		ser3 = (String)SERIALAUX;
-	#endif
-		
-	String info_vers	= "<iDCCpp-LMD LIBRARY BASE STATION FOR ARDUINO V-" + (String)DCCPP_LIBRARY_VERSION + ">";
-	String info_serial	= "<N Wifi: " + ser1 + " Bluetooth: " + ser2 +  " Aux: " + ser3  + ">";
-	DCCPP_INTERFACE.print(info_vers);
-	DCCPP_INTERFACE.println(info_serial);
-
-	#ifdef USE_SERIALWIFI
-		WIFI.println(info_vers);
-		WIFI.println(info_serial);
-	#endif
-	#ifdef USE_SERIALBLUETOOTH
-		BLUETOOTH.println(info_vers);
-		BLUETOOTH.println(info_serial);
-	#endif
-	#ifdef USE_SERIALAUX
-		SERIALAUX.println(info_vers);
-		SERIALAUX.println(info_serial);
-	#endif
-
-
-#ifdef DCCPP_PRINT_DCCPP
-#ifdef USE_TURNOUT
-	  Turnout::show();
-#endif
-#ifdef USE_OUTPUT
-	  Output::show();
-#endif
-#ifdef USE_SENSOR
-	  Sensor::show();
-#endif
-#endif
-		return true;
 
 	case 'F':     
 		/**	\addtogroup commandsGroup
@@ -771,17 +782,13 @@ case 'D':
 		returns: <b>\<f MEM\></b>
 		where MEM is the number of free bytes remaining in the Arduino's SRAM
 		*/
-			Serial.println("\nEntering .");
-
-			int v = 0;
-			int mem = 0;
-	  	#ifdef ARDUINO_ARCH_AVR
-	  			mem = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
- 					CommManager::printf("<f%d>", mem);
- 			#endif
- 			#ifdef USE_OLED
-			Oled::printSram(mem);
-			#endif 
+		#ifdef ARDUINO_ARCH_AVR
+	  		memoria = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+ 			CommManager::printf("<f%d>", memoria);
+ 		#endif
+ 		#ifdef USE_OLED
+			Oled::printSram(memoria);
+		#endif 
 
 		//v++;			// not used. This line is just here to avoid a warning by the compiler !
 		return true;
