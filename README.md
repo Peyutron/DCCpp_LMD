@@ -48,10 +48,10 @@ Con el pequeño parlante podremos percibir de una manera mas intuitiva si algo v
 Estos se pueden modificar en el archivo <em>Sound.cpp</em>
 
 
-\LMD 05/04/2023 V2.0.2
-  - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente (comandos <s>, <E> y <F>)
+*-LMD 05/04/2023 V2.0.2
+  - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente (comandos 's', 'E' y 'F')
 
-\LMD 01/04/2023 V2.0.1
+*-LMD 01/04/2023 V2.0.1
 - Datos seriales unificados en CommInterface.cpp
 - Implementación del puerto Serial1 como SerialWifi (SerialWifi.h) con WebSocket "ws://"
 - Implementación del puerto Serial2 como SerialBluetooth (SerialBluetooth.h)
