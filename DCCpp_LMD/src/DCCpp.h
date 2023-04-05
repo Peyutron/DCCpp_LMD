@@ -260,9 +260,9 @@ WARNING: if this line is not present, some errors will be raised during compilat
 \page revPage Revision History
 
 \LMD 05/04/2023 V2.0.2
-  - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente
+  - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente (comandos <s>, <E> y <F>)
 
-\LMD 30/03/2023 V2.0.1
+\LMD 01/04/2023 V2.0.1
 - Datos seriales unificados en CommInterface.cpp
 - Implementación del puerto Serial1 como SerialWifi (SerialWifi.h) con WebSocket "ws://"
 - Implementación del puerto Serial2 como SerialBluetooth (SerialBluetooth.h)
