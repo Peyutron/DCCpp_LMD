@@ -607,7 +607,6 @@ switch(com[0]){
     
 		returns: <b>\<O\></b>
 		*/
-	 	Serial.println("BORRARRRRRR");
 		EEStore::clear();
 		CommManager::printf("<O>");
 
