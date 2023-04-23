@@ -259,7 +259,7 @@ WARNING: if this line is not present, some errors will be raised during compilat
 
 \page revPage Revision History
 
-\LMD V2.0.3
+\LMD 23/04/2023 V2.0.3
   - Retromodulos S88 añadido (por Philippe -> http://lormedy.free.fr/)
   - Arreglos sonido
   - Comando <#> que muestra el número de locomotoras que puede administrar la central
