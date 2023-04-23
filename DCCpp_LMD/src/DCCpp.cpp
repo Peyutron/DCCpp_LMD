@@ -122,11 +122,17 @@ void DCCpp::loop()
 		progMonitor.check();
 	}
 
+#ifdef USE_S88
+  if (S88::checkTime())
+  {      // if sufficient time has elapsed since last update, scan 8 S88 sensors in a row
+    S88::check();
+  }
+#endif
 #ifdef USE_SENSOR
 	Sensor::check();    // check sensors for activated or not
 #endif
 #ifdef USE_OLED
-	Oled::updateOled();
+	 Oled::updateOled();
 #endif
 }
 
@@ -364,6 +370,10 @@ void DCCpp::showConfiguration()
 #if defined(USE_OUTPUT)
 	Serial.print(F("     OUTPUTS: "));
 	Serial.println(EEStore::data.nOutputs);
+#endif
+#if defined(USE_S88)
+    Serial.print(F("     S88   M: "));
+    Serial.println(EEStore::data.nS88);
 #endif
 #endif
 

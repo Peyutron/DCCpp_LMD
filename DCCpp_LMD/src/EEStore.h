@@ -28,6 +28,9 @@ struct EEStoreData{
 #ifdef USE_OUTPUT
   int nOutputs;	/**< Outputs number.*/
 #endif
+#ifdef USE_S88
+  int nS88;  /**< number of S88 byte-modules .*/
+#endif
 };
 
 /** This structure/class stores accessories data in EEPROM.

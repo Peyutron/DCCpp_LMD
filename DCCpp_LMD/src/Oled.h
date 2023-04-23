@@ -22,6 +22,10 @@ class Oled {
 
     static void GetThrottle(int, int, int );
     static void GetAccesories(int, int, int);
+    #ifdef USE_S88
+    static void GetS88(int, int);
+    static void GetS88Binary(String);
+    #endif
     static void GetSensor(int, int);
     static void GetOutput(int, int, int);  
     

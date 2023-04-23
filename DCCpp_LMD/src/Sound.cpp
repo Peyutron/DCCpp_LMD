@@ -8,7 +8,6 @@
 #include "EEStore.h"
 #include "Comm.h"
 
-//#define PIN_SOUND  6
 const int c[5]={131,262,523,1046,2093};       // frecuencias 4 octavas de Do
 const int cs[5]={139,277,554,1108,2217};      // Do#
 const int d[5]={147,294,587,1175,2349};       // Re
@@ -26,18 +25,19 @@ const int b[5]={247,494,988,1976,3951};      // Si
 
 void Sound::SoundOn(){
   
-  nota(d[1],150);noTone(PIN_SOUND);delay(40);
-  nota(d[1],150);noTone(PIN_SOUND);delay(40);
+  nota(e[3],250);noTone(PIN_SOUND); // delay(40);
+  /*nota(d[1],150);noTone(PIN_SOUND);delay(40);
  /* nota(d[1],150);noTone(PIN_SOUND);delay(40);
   nota(g[1],500);noTone(PIN_SOUND);delay(40); // 900
   nota(d[2],500);noTone(PIN_SOUND);delay(40); // 900*/
 }
 
 void Sound::SoundOff(){
-/*   nota(e[2], 200);noTone(PIN_SOUND);delay(150); //MI,FA,SOL,DO2 c,c,n,b,b=800, n=400, c=200, s=100;c,c,n,b,RE,MI,FA,c,c,b,
-    nota(f[2], 200);noTone(PIN_SOUND);delay(150);
-     nota(g[1], 400);noTone(PIN_SOUND);delay(150);
-      nota(c[3], 800);noTone(PIN_SOUND);delay(800);
+  
+  /*nota(e[2], 200);noTone(PIN_SOUND);delay(150); //MI,FA,SOL,DO2 c,c,n,b,b=800, n=400, c=200, s=100;c,c,n,b,RE,MI,FA,c,c,b,
+  nota(f[2], 200);noTone(PIN_SOUND);delay(150);
+  nota(g[1], 400);noTone(PIN_SOUND);delay(150);
+  nota(c[3], 800);noTone(PIN_SOUND);delay(800);
        
     nota(f[1], 200);noTone(PIN_SOUND);delay(50);
     nota(e[2], 200);noTone(PIN_SOUND);delay(50);
@@ -51,32 +51,37 @@ void Sound::SoundOff(){
   nota(a[1], 375);  
   nota(c[2], 125);
   nota(e[2], 650);
-  noTone(PIN_SOUND);
-  //delay (500);*/
-  nota(f[1], 250);noTone(PIN_SOUND);delay(40);
-  nota(gs[1], 500);noTone(PIN_SOUND);delay(40); 
-/*  nota(f[1], 375);noTone(PIN_SOUND);delay(40); 
+  noTone(PIN_SOUND);*/
+  //delay (500);
+  nota(f[1], 250);noTone(PIN_SOUND);delay(40); // no comentar
+  /*nota(gs[1], 500);noTone(PIN_SOUND);delay(40);
+  nota(f[1], 375);noTone(PIN_SOUND);delay(40); 
   nota(c[2], 125);noTone(PIN_SOUND);delay(40);
   nota(a[1], 500); noTone(PIN_SOUND);delay(40); 
   nota(f[1], 375);noTone(PIN_SOUND);delay(40);  
   nota(c[2], 125);noTone(PIN_SOUND);delay(40);
-  nota(a[1], 650);noTone(PIN_SOUND);delay(40);  */
+  nota(a[1], 650);noTone(PIN_SOUND);delay(40); */
   noTone(PIN_SOUND);
 }
 void Sound::ActionError() {
-  nota(cs[1], 500); noTone(PIN_SOUND); delay(50);
+  nota(e[1], 250); noTone(PIN_SOUND); delay(50);
 }
 void Sound::ActionErrorCurrent(){
   for (int errorMain = 0; errorMain <= 2; errorMain++){
     nota(cs[1], 500); noTone(PIN_SOUND); delay(50);
-    delay (200);
+    // delay (200);
   }
 }
 
 void Sound::ActionOK() {
-  nota(b[3], 100); noTone(PIN_SOUND); delay(50);
+  nota(b[3], 100); noTone(PIN_SOUND); // delay(50);
 }
 //  nota(b[3], 100); noTone(PIN_SOUND); delay(50);
+
+void Sound::SensorAction() {
+  nota(g[2], 50); noTone(PIN_SOUND); // delay(50);
+}
+
 void Sound::nota(int frec, int t)
 {
     tone(PIN_SOUND,frec);      // suena la nota frec recibida

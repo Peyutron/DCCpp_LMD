@@ -23,6 +23,7 @@ Part of DCC++ BASE STATION for the Arduino
 #include "Sensor.h"
 #include "Outputs.h"
 #include "EEPROM.h"
+#include "S88.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -49,6 +50,9 @@ void EEStore::init(){
 #ifdef USE_OUTPUT
 	data.nOutputs=0;
 #endif
+#ifdef USE_S88
+  data.nS88=0;
+#endif	
 #ifdef VISUALSTUDIO
 	EEPROM.put(0, (void *)&data, sizeof(EEStoreData));
 #else
@@ -65,13 +69,16 @@ void EEStore::init(){
 #endif
 #ifdef USE_OUTPUT
   Output::load();     // load output definitions
-#endif  
+#endif
+#ifdef USE_S88
+  S88::load();        // load S88 definitions
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void EEStore::clear(){
-	sprintf(data.id,EESTORE_ID);  // create blank eeStore structure (no turnouts, no sensors) and save it back to EEPROM
+  sprintf(data.id,EESTORE_ID);  // create blank eeStore structure (no turnouts, no sensors) and save it back to EEPROM
 #ifdef USE_TURNOUT
   data.nTurnouts=0;
 #endif
@@ -80,6 +87,9 @@ void EEStore::clear(){
 #endif
 #ifdef USE_OUTPUT
   data.nOutputs=0;
+#endif
+#ifdef USE_S88
+  data.nS88=0;
 #endif
 #ifdef VISUALSTUDIO
   EEPROM.put(0, (void *)&data, sizeof(EEStoreData));
@@ -108,6 +118,9 @@ void EEStore::store() {
 #ifdef USE_OUTPUT
 	Output::store();
 #endif
+#ifdef USE_S88
+  S88::store();
+#endif
 #ifdef VISUALSTUDIO
 	EEPROM.put(0, (void *)&data, sizeof(EEStoreData));
 #else
@@ -129,6 +142,10 @@ bool EEStore::needsRefreshing() {
 #ifdef USE_OUTPUT
 	if (data.nOutputs!= Output::count())
 		return true;
+#endif
+#ifdef USE_S88
+  if (data.nS88 != S88::count())
+    return true;
 #endif
 	return false;
 }

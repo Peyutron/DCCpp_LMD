@@ -16,6 +16,8 @@ class Sound {
     static void ActionError();
     static void ActionErrorCurrent();
     static void ActionOK();
+    static void SensorAction();
+
   private:
   static void nota(int, int);
     

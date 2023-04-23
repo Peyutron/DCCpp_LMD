@@ -33,19 +33,19 @@ void CommManager::printf(const char *fmt, ...) {
 	va_end(args);
 	
 	#ifdef USE_TEXTCOMMAND
-		DCCPP_INTERFACE.print(buf);	// Serial (PC)
+		DCCPP_INTERFACE.print(buf);
 		#if !defined(USE_ETHERNET)
 			DCCPP_INTERFACE.println("");
 		#endif
 	#endif
-	#ifdef USE_SERIALWIFI		// Serial1
+	#ifdef USE_SERIALWIFI
 		WIFI.print(buf);
 	#endif
-	#ifdef USE_SERIALBLUETOOTH	// Serial2
-		BLUETOOTH.print(buf);	
+	#ifdef USE_SERIALBLUETOOTH
+		BLUETOOTH.print(buf);
 	#endif
-	#ifdef USE_SERIALAUX		// Serial3
-		SERIALAUX.print(buf);	
+	#ifdef USE_SERIALAUX
+		SERIALAUX.print(buf);
 	#endif	
 	/*#if !defined(USE_ETHERNET)
 		DCCPP_INTERFACE.println("");	

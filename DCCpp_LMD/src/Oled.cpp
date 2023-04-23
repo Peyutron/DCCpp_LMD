@@ -13,11 +13,12 @@
 #include <Wire.h>
 #endif
 
-#define ACTUALIZA_INFO 250  // La pantalla se actualiza cada 250ms 1/4
-#define PAUSA_          14  // Pausa de 6 segundos para mostrar la información. 14x250 = 3500ms
+#define ACTUALIZA_INFO 750  // Actualiza cada 750ms, con menos deja de funcionar correctamente S88
+#define PAUSA_          4  // Pausa de 6 segundos para mostrar la información. 14x250 = 3500ms
 #define ACCESORIO 1
 #define SENSORES  2
 #define SALIDAS   3
+#define S88       4
 
 // Select your screen on Oled.h list
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SDA, /* reset=*/ U8X8_PIN_NONE);   // All Boards without Reset of the Display
@@ -25,7 +26,7 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 bool on_off = false;
 String serialIn = "<  >";
 String wifiIp = " ";
-
+String S88Binary = ""; 
 int timerpantalla = 0;
 int cab = 0;
 int velocidad = 0;
@@ -86,6 +87,8 @@ void Oled::initScreen() { // Oled.cpp (interno)
     u8g2.print(F(" "));
     if (tStatus == 0) u8g2.println(F("Closed"));
     else u8g2.println(F("Open"));
+    
+    #ifdef USE_SENSOR
     // Sensores:
     u8g2.setCursor(5, 45);
     u8g2.print(F("Sensores: "));
@@ -95,6 +98,25 @@ void Oled::initScreen() { // Oled.cpp (interno)
     u8g2.print(F(" "));
     u8g2.print(estadosensor);
     // Pines de Salida
+    #endif
+    #ifdef USE_S88
+    // S88:
+    if (S88Binary.equals("")){
+      u8g2.setCursor(5, 45);
+      u8g2.print(F("S88: "));
+      u8g2.print(idsensor);
+      u8g2.print(F(" "));
+      if (estadosensor == 0) u8g2.println(F("occupied"));
+      else u8g2.println(F("unoccupied"));
+    } else {
+      u8g2.setCursor(5, 45);
+      u8g2.print(S88Binary);
+      
+    }
+    // occupied
+    #endif
+
+     // Pines de Salida
     u8g2.setCursor(5, 55);
     u8g2.print(F("Salidas:  "));
     u8g2.print(idsalida);
@@ -102,7 +124,6 @@ void Oled::initScreen() { // Oled.cpp (interno)
     u8g2.print(pinsalida);
     u8g2.print(F(" "));
     u8g2.print(estadosalida);
-    // Pines de Salida
 
   } else {        // PANTALLA INICIAL
 
@@ -125,9 +146,22 @@ void Oled::initScreen() { // Oled.cpp (interno)
   #endif
     } else u8g2.print(wifiIp); // wifi WebSocket conectado
     u8g2.setCursor(5, 60);
-    u8g2.print("D:  ");  u8g2.print(EEStore::data.nTurnouts);
-    u8g2.print(" S:  "); u8g2.print(EEStore::data.nSensors);
-    u8g2.print(" O:  "); u8g2.print(EEStore::data.nOutputs);
+    int a = 0;
+    int b = 0;
+    int c = 0;
+    #ifdef USE_TURNOUT
+      a = EEStore::data.nTurnouts;
+    #endif
+    #ifdef USE_SENSOR
+      a = EEStore::data.nSensors;
+    #endif
+    #ifdef USE_OUTPUT
+      a = EEStore::data.nOutputs;
+    #endif
+
+    u8g2.print("D:  ");  u8g2.print(a);
+    u8g2.print(" S:  "); u8g2.print(b);
+    u8g2.print(" O:  "); u8g2.print(c);
   }
   u8g2.sendBuffer();  // transfer internal memory to the display
 }
@@ -165,6 +199,17 @@ void Oled::GetAccesories(int addr, int subAddr, int Status) { // Turnout::activa
   subAddress = subAddr;
   tStatus = Status;
 }
+
+#ifdef USE_S88
+void Oled::GetS88(int id, int estado) { // S88::check = 3
+  S88Binary = "";
+  idsensor = id;
+  estadosensor = estado;
+}
+void Oled::GetS88Binary(String dataS) { // S88::check = 0 
+  S88Binary = dataS;
+}
+#endif
 
 void Oled::GetSensor(int num, int pullUp) { // Sensor::status
   idsensor = num;
@@ -229,6 +274,8 @@ void Oled::printErrorList(int option) { // Output::show - Turnout::show - Sensor
     case SALIDAS:
       ln1 = "Sin Salidas";
       break;
+    case S88:
+      ln1 = "Error S88";
 
   }
   u8g2.clearBuffer();   // clear the internal memory
@@ -236,7 +283,7 @@ void Oled::printErrorList(int option) { // Output::show - Turnout::show - Sensor
   u8g2.setCursor(5,30);
   u8g2.println(ln1);
   u8g2.setCursor(35 , 50);
-  u8g2.println(F("definidos"));
+  if (option != S88) u8g2.println(F("definidos"));
   u8g2.sendBuffer();  // transfer internal memory to the display
   timerpantalla = PAUSA_;
 }

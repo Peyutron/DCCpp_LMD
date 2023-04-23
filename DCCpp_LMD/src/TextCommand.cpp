@@ -12,6 +12,7 @@ Part of DCC++ BASE STATION for the Arduino
 // See TextCommand::parse() below for defined text commands.
 #include "CommInterface.h"
 #include "TextCommand.h"
+#include "Config.h"
 #ifdef USE_TEXTCOMMAND
 
 
@@ -29,6 +30,7 @@ String info_serial;	// Para CommInterface en comando 's'
 int nElemento[4] = {0, 0, 0}; 	// Para CommInterface en comando 'E'
 int v = 0;						// Para CommInterface en comando 'F'
 int memoria = 0;				// Para CommInterface en comando 'F'
+
 ///////////////////////////////////////////////////////////////////////////////
 
 char TextCommand::commandString[MAX_COMMAND_LENGTH+1];
@@ -106,6 +108,41 @@ bool TextCommand::parse(char *com){
 
 switch(com[0]){
 
+#ifdef USE_S88      // decode XBPC command
+    case 'Q':       // <Q>
+    com[1] = ' ';
+    com[2] = '6';
+    com[3] = '4';
+    com[4] = ' ';
+    com[5] = '3';
+    com[6] = '\0';
+
+    return true; // NUEVA LINEA 
+
+    case 'Y':       // <Y Nb_S88_Modules DataFormat> for initialisation or <Y> for occupancy feedback
+/*
+ *   <Y Nb_S88_Bytes DataFormat>:            sets Nb_S88_Modules read with output DataFormat
+ *   <Y>                                     provide occupation feedback
+ *
+ *   Nb_S88_Bytes: the byte number (0-64) to read
+ *   DataFormat: 0 (Binary) 1 (Hexadecimal)
+ *
+ *   returns: <o status>, then <y S88_Bytes> or <q/Q n>
+ *
+ *   *** SEE S88.CPP FOR COMPLETE INFO ON THE DIFFERENT VARIATIONS OF THE "Y" COMMAND
+ *   used to define S88 retrosignalisation definitions
+ */
+      //DCCPP_INTERFACE.print("\n<y 00000000>"); or DCCPP_INTERFACE.print("\n<y 00>");
+      S88::parse(com +1); // NUEVA LINEA 
+      return true;
+      // S88::parse(com+1);
+      // break;
+#endif
+
+
+
+
+
 	case 't':       
 		/**	\addtogroup commandsGroup
 		SET ENGINE THROTTLES USING 128-STEP SPEED CONTROL
@@ -181,6 +218,10 @@ switch(com[0]){
 		DCCpp::mainRegs.setFunction(com+1);
 	  	return true;
 
+    case '#': // NUMBER OF LOCOSLOTS <#>
+    	CommManager::printf("<# %d>\n", MAX_MAIN_REGISTERS);
+        return true;
+
 	case 'a':       
 		/**	\addtogroup commandsGroup
 		OPERATE STATIONARY ACCESSORY DECODERS 
@@ -242,7 +283,7 @@ switch(com[0]){
 #endif
 
 #ifdef USE_SENSOR
-
+	  
 	case 'S': 
 /*   
  *   *** SEE SENSOR.CPP FOR COMPLETE INFO ON THE DIFFERENT VARIATIONS OF THE "S" COMMAND
@@ -479,21 +520,6 @@ switch(com[0]){
 		return true;
 
 	case 's':
-		/**	\addtogroup commandsGroup
-		STATUS OF DCC++ BASE STATION
-		----------------------------
-		
-		<b>
-		\verbatim
-		<s>
-		\endverbatim
-		</b>
-
-		returns status messages containing track power status, throttle status, turn-out status, and a version number
-		NOTE: this is very useful as a first command for an interface to send to this sketch in order to verify connectivity and update any GUI to reflect actual throttle and turn-out settings
-    
-		returns: series of status messages that can be read by an interface to determine status of DCC++ Base Station and important settings
-		*/
 	if (DCCppConfig::SignalEnablePinMain == UNDEFINED_PIN || digitalRead(DCCppConfig::SignalEnablePinMain) == HIGH)
 		CommManager::printf("<p0>");
 	if (DCCppConfig::SignalEnablePinProg == UNDEFINED_PIN || digitalRead(DCCppConfig::SignalEnablePinProg) == HIGH)
@@ -516,6 +542,7 @@ switch(com[0]){
 		DCCPP_INTERFACE.println("");
 #endif
 	}*/
+	//CommManager::printf("<iDCCpp LIBRARY BASE STATION FOR ARDUINO>");
 
 	#ifdef USE_SERIALWIFI
 		serialInUse[0] = (String)WIFI;
@@ -557,7 +584,8 @@ switch(com[0]){
 	  Sensor::show();
 #endif
 #endif
-	return true;	
+	return true;
+
 
 #ifdef USE_EEPROM
 	case 'E':     
@@ -650,8 +678,8 @@ case 'D':
 		changes the clock speed of the chip and the pre-scaler for the timers so that you can visually see the DCC signals flickering with an LED
 		SERIAL COMMUNICATION WILL BE INTERUPTED ONCE THIS COMMAND IS ISSUED - MUST RESET BOARD OR RE-OPEN SERIAL WINDOW TO RE-ESTABLISH COMMS
 		*/
-
-		Serial.println("\nEntering Diagnostic Mode...");
+		CommManager::printf("Entering Diagnostic Mode...");
+		// Serial.println("\nEntering Diagnostic Mode...");
 		delay(1000);
 
 		DCCpp::setDebugDccMode();
@@ -759,35 +787,18 @@ case 'D':
 		#endif
 			return true;
 	#endif
-		
-		
 
-
+	
 	case 'F':     
-		/**	\addtogroup commandsGroup
-		ATTEMPTS TO DETERMINE HOW MUCH FREE SRAM IS AVAILABLE IN ARDUINO
-		----------------------------------------------------------------
+				
 
-		<b>
-		\verbatim
-		<F>
-		\endverbatim
-		</b>
-
-		measure amount of free SRAM memory left on the Arduino based on trick found on the Internet.
-		Useful when setting dynamic array sizes, considering the Uno only has 2048 bytes of dynamic SRAM.
-		Unfortunately not very reliable --- would be great to find a better method
-     
-		returns: <b>\<f MEM\></b>
-		where MEM is the number of free bytes remaining in the Arduino's SRAM
-		*/
-		#ifdef ARDUINO_ARCH_AVR
-	  		memoria = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
- 			CommManager::printf("<f%d>", memoria);
- 		#endif
- 		#ifdef USE_OLED
+	  	#ifdef ARDUINO_ARCH_AVR
+	  			memoria = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+ 				CommManager::printf("<f%d>", memoria);
+ 			#endif
+ 			#ifdef USE_OLED
 			Oled::printSram(memoria);
-		#endif 
+			#endif 
 
 		//v++;			// not used. This line is just here to avoid a warning by the compiler !
 		return true;

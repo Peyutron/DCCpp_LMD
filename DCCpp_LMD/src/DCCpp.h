@@ -259,8 +259,15 @@ WARNING: if this line is not present, some errors will be raised during compilat
 
 \page revPage Revision History
 
+\LMD V2.0.3
+  - Retromodulos S88 añadido (por Philippe -> http://lormedy.free.fr/)
+  - Arreglos sonido
+  - Comando <#> que muestra el número de locomotoras que puede administrar la central
+  - Comando <I> (solo WiFi) Muestra la IP del dispositivo Wifi WebSocket (https://github.com/Peyutron/DCC-ESP8266-Websocket-Server)
+
+
 \LMD 05/04/2023 V2.0.2
-  - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente (comandos <s>, <E> y <F>)
+  - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente
 
 \LMD 01/04/2023 V2.0.1
 - Datos seriales unificados en CommInterface.cpp
@@ -271,6 +278,7 @@ WARNING: if this line is not present, some errors will be raised during compilat
   *- SSD1603 128x64
 - Monitor Serial en pantalla
 - Monitor de consumo 
+
 
 \par 08/11/2020 V1.4.2
 - Adaptation de la mesure de courant à l'ESP32.
@@ -453,7 +461,8 @@ _______________
 /** @file DCCpp.h
 Main include file of the library.*/
 
-#define DCCPP_LIBRARY_VERSION		"VERSION DCCpp library: 1.4.2"
+// #define DCCPP_LIBRARY_VERSION   "VERSION DCCpp library: 1.4.2"
+#define DCCPP_LIBRARY_VERSION   "VERSION DCCpp LMD: 2.0.3"
 
 #ifdef VISUALSTUDIO
 #pragma warning (disable : 4005)
@@ -494,12 +503,13 @@ Main include file of the library.*/
 #define USE_TURNOUT
 #define USE_EEPROM
 #define USE_OUTPUT
-#define USE_SENSOR
+#define USE_SENSOR       // No compatible con S88
+//#define USE_S88             // Retromodulos S88
 #define USE_TEXTCOMMAND
 // #define DCCPP_DEBUG_MODE  // Muestra Información en pantalla
-#define USE_SERIALWIFI      // Serial1
-#define USE_SERIALBLUETOOTH // Serial2
-#define USE_SERIALAUX       // Serial3 
+//#define USE_SERIALWIFI      // Serial1
+//#define USE_SERIALBLUETOOTH // Serial2
+//#define USE_SERIALAUX       // Serial3 
 #define USE_OLED          // Pantalla OLED 128x64 i2C 
 // TODO #define USE_LCD           // Pantalla LCD 16x2 i2C 
 #define USE_SOUND          // Buzzer sonidos varios
@@ -517,9 +527,11 @@ Main include file of the library.*/
     /**Comment this line to avoid using and compiling EEPROM saving.*/
     #define USE_EEPROM
     /**Comment this line to avoid using and compiling Outputs.*/
-    #define USE_OUTPUT
+    // #define USE_OUTPUT
     /**Comment this line to avoid using and compiling Sensors.*/
-    #define USE_SENSOR
+    // #define USE_SENSOR
+    /**Comment this line to avoid using and compiling S88.*/
+    #define USE_S88
 		/**Comment this line to avoid using and compiling Serial commands.*/
 		#define USE_TEXTCOMMAND
 		/**Comment this line to avoid using and compiling Ethernet shield using Wiznet 5100 chip (Arduino Shield v1).*/
@@ -530,6 +542,8 @@ Main include file of the library.*/
 		#define USE_ETHERNET_WIZNET_5200
 		/**Comment this line to avoid using and compiling Ethernet shield using ENC28J60 chip.*/
 		#define USE_ETHERNET_ENC28J60
+
+    
 
 		#undef USE_TURNOUT
 		#undef USE_EEPROM
@@ -587,6 +601,9 @@ Main include file of the library.*/
 #endif
 #ifdef USE_SENSOR
 #include "Sensor.h"
+#endif
+#ifdef USE_S88
+#include "S88.h"
 #endif
 #ifdef USE_TEXTCOMMAND
 #include "TextCommand.h"
