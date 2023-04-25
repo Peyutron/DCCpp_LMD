@@ -51,8 +51,8 @@ Estos se pueden modificar en el archivo <em>Sound.cpp</em>
 *-LMD 23/04/2023 V2.0.3
   - Retromodulos S88 añadido (por Philippe -> http://lormedy.free.fr/)
   - Arreglos sonido
-  - Comando <#> que muestra el número de locomotoras que puede administrar la central
-  - Comando <I> (solo WiFi) Muestra la IP del dispositivo Wifi WebSocket (https://github.com/Peyutron/DCC-ESP8266-Websocket-Server)
+  - Comando '#' que muestra el número de locomotoras que puede administrar la central
+  - Comando 'I' (solo WiFi) Muestra la IP del dispositivo Wifi WebSocket (https://github.com/Peyutron/DCC-ESP8266-Websocket-Server)
 
 *-LMD 05/04/2023 V2.0.2
   - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente (comandos 's', 'E' y 'F')
