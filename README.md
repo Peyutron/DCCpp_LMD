@@ -12,6 +12,8 @@ DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduin
   
 *- Pantalla Oled con librería U8G2lib 
 
+*- Retromodulos S88
+
 *- Serial → PC
 
 *- Serial1 → Wifi
@@ -20,7 +22,7 @@ DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduin
 
 *- Serial3 → Serial Auxiliar
 
-*- Sonido en pin 6
+*- Sonido 
   
 </strong>
 
