@@ -117,8 +117,7 @@ switch(com[0]){
     com[5] = '3';
     com[6] = '\0';
 
-    return true; // NUEVA LINEA 
-
+		
     case 'Y':       // <Y Nb_S88_Modules DataFormat> for initialisation or <Y> for occupancy feedback
 /*
  *   <Y Nb_S88_Bytes DataFormat>:            sets Nb_S88_Modules read with output DataFormat
