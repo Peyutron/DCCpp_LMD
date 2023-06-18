@@ -49,6 +49,16 @@ Nos podemos ahorrar el soldar componentes ya que para el módulo <strong>ESP-01<
 Con el pequeño parlante podremos percibir de una manera mas intuitiva si algo va bien o mal en la cental, cuenta con sonidos para <strong>encendido/apagado</strong> y <strong>confirmación o fallo</strong>
 Estos se pueden modificar en el archivo <em>Sound.cpp</em>
 
+*-LMD 23/04/2023 V2.0.4
+  - Añadido teclado 4x3 y encoder rotativo en Keyboard.h y Keyboard.cpp. Los pines
+    definidos para el teclado y encoder se encuentran en Keyboard.h
+  - Con Keyboard se añaden varias funciones en Oled.cpp. LocomotiveOled, TurnoutOled.
+  - Pantalla para uso de locomotoras (1). Necesita Keyboard
+  - Pantalla para uso de desvíos (2). Necesita Keyboard
+  - como usar el teclado en: URL) 
+  - Oled.cpp se actualiza solo cuando cambian los datos que se muestran.
+  - Imagen de inicio, opcional.
+  - Algunas partes han sido traducidas a Español ES
 
 *-LMD 23/04/2023 V2.0.3
   - Retromodulos S88 añadido (por Philippe -> http://lormedy.free.fr/)
