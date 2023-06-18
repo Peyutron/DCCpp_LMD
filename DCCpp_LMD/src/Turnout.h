@@ -15,16 +15,18 @@ Part of DCC++ BASE STATION for the Arduino
 #include "DCCpp.h"
 
 #ifdef USE_TURNOUT
-/** Data associated to each Turnout.*/
+	
+
+/** Datos asociados a cada desvío.*/
 struct TurnoutData {
-  byte tStatus;			/**< Current status of the turnout : 0 for Off, 1 for On.*/
-  byte subAddress;		/**< The sub-address of the decoder controlling this turnout (0-3).*/
-  int id;				/**< The numeric ID (0-32767) of the turnout to control.*/
-  int address;  		/**< The primary address of the decoder controlling this turnout (0-511).*/
+  byte tStatus;				//	Estado actual del desvío: 0 para Off, 1 para On.
+  byte subAddress;		//	La subdirección del decodificador que controla este desvío (0-3).
+  int id;							//  El ID numérico (0-32767) del desvío a controlar.
+  int address;  			//	La dirección principal del decodificador que controla este desvío (0-511).
 };
 
 /**	\addtogroup commandsGroup
-	CREATES A NEW TURNOU%T
+ 	CREA UN NUEVO DESVIO
 	----------------------
 
 	<b>
@@ -33,14 +35,15 @@ struct TurnoutData {
 	\endverbatim
 	</b>
 
-	creates a new turnout ID, with specified ADDRESS and SUBADDRESS
-	if turnout ID already exists, it is updated with specified ADDRESS and SUBADDRESS
+	crea una nueva ID de participación, con DIRECCIÓN y SUBDIRECCIÓN especificadas
+	Si la ID del existe, esta se actualizara con la DIRECCIÓN y SUBDIRECCIÓN especificadas
+	
 
-	- <b>ID</b>: the numeric ID (0-32767) of the turnout to control
-	- <b> ADDRESS</b>:  the primary address of the decoder controlling this turnout (0-511)
-	- <b> SUBADDRESS</b>: the sub-address of the decoder controlling this turnout (0-3)
+	- <b>ID</b>: El ID numérico (0-32767) del desvío a controlar.
+	- <b> ADDRESS</b>:  La dirección principal del decodificador que controla este desvío (0-511).
+	- <b> SUBADDRESS</b>: La subdirección del decodificador que controla este desvío (0-3).
 
-	returns: <b>\<O\></b> if successful and <b>\<X\></b> if unsuccessful (e.g. out of memory)
+	devuelve: <b>\<O\></b> si es correcto y <b>\<X\></b> si no (ej. Fuera de memoria)
 */
 
 /**	\addtogroup commandsGroup
@@ -53,15 +56,16 @@ struct TurnoutData {
 	\endverbatim
 	</b>
 
-	deletes definition of turnout ID
+	Elimina la ID de un desvío definido
+	
 
-	- <b>ID</b>: the numeric ID (0-32767) of the turnout to control
+	- <b>ID</b>: El ID numérico (0-32767) del desvío a controlar.
 
-	returns: <b>\<O\></b> if successful and <b>\<X\></b> if unsuccessful (e.g. ID does not exist)
+	devuelve: <b>\<O\></b> si es correcto y <b>\<X\></b> si no (ej. Fuera de memoria)
 */
 
 /**	\addtogroup commandsGroup
-	LISTS ALL TURNOUTS
+ 	LISTA DE TODOS LOS DESVÍOS
 	------------------
 
 	<b>
@@ -70,11 +74,11 @@ struct TurnoutData {
 	\endverbatim
 	</b>
 
-	returns: <b>\<H ID ADDRESS SUBADDRESS THROW\></b> for each defined turnout or <b>\<X\></b> if no turnouts defined where
+	devuelve: <b>\<H ID ADDRESS SUBADDRESS THROW\></b>p ara cada desvío definido o <b>\<X\></b> Si no hay desvío definido
 
-	- <b>ID</b>: the numeric ID (0-32767) of the turnout to control
-	- <b>ADDRESS</b>:  the primary address of the decoder controlling this turnout (0-511)
-	- <b>SUBADDRESS</b>: the sub-address of the decoder controlling this turnout (0-3)
+	- <b>ID</b>: El ID numérico (0-32767) del desvío a controlar.
+	- <b>ADDRESS</b>:  La dirección principal del decodificador que controla este desvío (0-511).
+	- <b>SUBADDRESS</b>: La subdirección del decodificador que controla este desvío (0-3).
 */
 
 /**	\addtogroup commandsGroup
@@ -87,85 +91,85 @@ struct TurnoutData {
 	\endverbatim
 	</b>
 
-	sets turnout ID to either the "thrown" or "not thrown" position
+	Establece el ID de desvío en la posición "cruzado" o "recto"
 
-	- <b>ID</b>: the numeric ID (0-32767) of the turnout to control
-	- <b>THROW</b>:  0 (not thrown) or 1 (thrown)
+	- <b>ID</b>: El ID numérico (0-32767) del desvío a controlar.
+	- <b>THROW</b>:  0 (recto) or 1 (cruzado)
 
-	returns: <b>\<H ID THROW\></b>, or <b>\<X\></b> if turnout ID does not exist
+	devuelve: <b>\<H ID THROW\></b>, o <b>\<X\></b> si la ID del desvío no existe
 */
 
-/** DCC++ BASE STATION can keep track of the direction of any turnout that is controlled
-by a DCC stationary accessory decoder.
+/** DCC++ BASE STATION puede realizar un seguimiento de la dirección de cualquier desvío que esté controlado
+por un decodificador accesorio estacionario DCC.
 
-If the TextCommand is used, all turnouts, as well as any other DCC accessories
-connected in this fashion, can always be operated using the DCC BASE STATION Turnout command.
+Si se utiliza TextCommand, todos los desvíos, así como cualquier otro accesorio DCC
+conectado, siempre se puedrá operar usando el comando de desvío DCC BASE STATION.
 
-When controlled as such, the Arduino updates and stores the direction of each Turnout in EEPROM so
-that it is retained even without power.  A list of the current directions of each Turnout in the form <b>\<H ID THROW\></b> is generated
-by this sketch whenever the <b>\<s\></b> status command is invoked.  This provides an efficient way of initializing
-the directions of any Turnouts being monitored or controlled by a separate interface or GUI program.
+Cuando se controla como tal, Arduino actualiza y almacena la dirección de cada desvío en la memoria EEPROM para 
+que se mantengan incluso sin energía.  ASe genera una lista de las direcciones actuales de cada desvío en la forma <b>\<H ID THROW\></b>
+por este boceto cada vez que se invoca el comando de estado <b>\<s\></b>.  Esto proporciona una manera eficiente de inicializar
+las direcciones de los desvíos que están siendo monitoreados o controlados por una interfaz separada o un programa GUI.
 
-Once all turnouts have been properly defined, use the <b>\<E\></b> command to store their definitions to EEPROM.
-If you later make edits/additions/deletions to the turnout definitions, you must invoke the <b>\<E\></b> command if you want those
-new definitions updated in the EEPROM.  You can also clear everything stored in the EEPROM by invoking the <b>\<e\></b> command.
+Una vez que todos los desvíos se hayan definido correctamente, use el comando <b>\<E\></b> para almacenar sus definiciones en EEPROM.
+Si luego realiza ediciones/adiciones/eliminaciones a las definiciones de desvío, debe invocar el comando <b>\<E\></b> si desea que esas
+nuevas definiciones sean actualizadas en la EEPROM. También puede borrar todo lo almacenado en la EEPROM invocando el comando <b>\<e\></b>.
 
-Without	TextCommand, this is a classic C++ usage. An instance of the structure is created by the user,
-and functions like begin() and activate() can be applied on this instance. 
-load() and store() of the class can still be used (if USE_EEPROM is activated).
+Sin TextCommand, este es un uso clásico de C++. AEl usuario crea una instancia de la estructura,
+y funciones como begin() y activar() se pueden aplicar en esta instancia.
+También se pueden usar load() y store() de la clase (si USE_EEPROM está activado).
 */
 struct Turnout{
-	struct TurnoutData data;	/**< Data associated to this output.*/
+	struct TurnoutData data;	/**< Datos asociados a este desvío.*/
 
-	/** Initialize the turnout created by regular C++ instantiation.
-	@param id The numeric ID (0-32767) of the sensor.
-	@param add	The primary address of the decoder controlling this turnout (0-511).
-	@param subAdd	The sub-address of the decoder controlling this turnout (0-3).
+	/** Inicializa un desvío creado por una instacia regular de C++.
+	@param id El ID numérico (0-32767) del desvío a controlar.
+	@param add	La dirección principal del decodificador que controla este desvío (0-511).
+	@param subAdd	La subdirección del decodificador que controla este desvío (0-3).
 	@remark Should not be used in command line mode.
 	*/
 	void begin(int id, int add, int subAdd);
-	/** Force the turnout values created by command line.
-	@param id The numeric ID (0-32767) of the sensor.
-	@param add	The primary address of the decoder controlling this turnout (0-511).
-	@param subAdd	The sub-address of the decoder controlling this turnout (0-3).
+	/** Fuerza la creación de un desvío por linea de comando.
+	@param El ID numérico (0-32767) del desvío a controlar.
+	@param add	La dirección principal del decodificador que controla este desvío (0-511).
+	@param subAdd	La subdirección del decodificador que controla este desvío (0-3).
 	@remark Should not be used in C++ mode.
 	*/
 	void set(int id, int add, int subAdd);
-	/** Change the activation state of the turnout.
+	/** Cambia el estaddo de activacion del desvíoChange the activation state of the turnout.
 	@param s new state : 0 for off, 1 for on. Default is 1.
 	*/
 	void activate(int s = 1);
 	/** Inactivate the turnout.
 	*/
 	inline void inactivate() { activate(0); }
-	/** Checks if the output is activated or not.
-	@return True if the output is activated. Otherwise false (of course...).
+	/** Comprueba si la salida está activada o no.
+	@devuelve True si la salida está activada. De lo contrario falso (por supuesto...).
 	*/
 	inline bool isActivated() { return this->data.tStatus > 0; }
 
 #if defined(USE_EEPROM)	|| defined(USE_TEXTCOMMAND)
 	static Turnout *firstTurnout;	/**< Address of the first object of this class. NULL means empty list of turnouts. Do not change it !*/
 	Turnout *nextTurnout;			/**< Address of the next object of this class. NULL means end of the list of turnouts. Do not change it !*/
-	/** Get a particular turnout.
-	@param id	The numeric ID (0-32767) of the turnout.
+	/** Obtiene un desvío.
+	@param id	El ID numérico (0-32767) del desvío a controlar.
 	@return The found turnout or NULL if not found.
 	@remark Only available when USE_EEPROM or USE_TEXTCOMMAND is defined.
 	*/
 	static Turnout* get(int id);
-	/** Removes a particular turnout.
-	@param id	The numeric ID (0-32767) of the turnout.
-	@remark Only available when USE_EEPROM or USE_TEXTCOMMAND is defined.
+	/** Elimina un desvío.
+	@param id	El ID numérico (0-32767) del desvío a controlar.
+	@remark Solo disponible cuando USE_EEPROM o USE_TEXTCOMMAND esta definido.
 	*/
 	static void remove(int id);
-	/** Get the total number of turnouts.
-	@return Number of turnouts.
-	@remark Only available when USE_EEPROM or USE_TEXTCOMMAND is defined.
+	/** Obtiene el múmero total de desvíos.
+	@devuelve el número de desvíos.
+	@remark Solo disponible cuando USE_EEPROM o USE_TEXTCOMMAND esta definido.
 	*/
 	static int count();
 
 #ifdef DCCPP_PRINT_DCCPP
-	/** Show the content of all the turnouts.
-	@remark Only available when DCCPP_PRINT_DCCPP is defined.
+	/** Muestra el contenido de todos los desvíos.
+	@remark Solo disponible cuando DCCPP_PRINT_DCCPP esta definido.
 	*/
 	static void show();
 #endif
@@ -173,12 +177,12 @@ struct Turnout{
 #if defined(USE_EEPROM)
 	int eepromPos;	/**< EEPROM starting address for this Turnout storage.*/
 
-	/** Load the content of all turnouts from EEPROM.
-	@remark Only available when USE_EEPROM is defined.
+	/** Carga el contenido de todos los desvíos desde la EEPROM.
+	@remark Solo disponible cuando USE_EEPROM esta definido.
 	*/
 	static void load();
 	/** Store the content of all turnouts in EEPROM.
-	@remark Only available when USE_EEPROM is defined.
+	@remark Solo disponible cuando USE_EEPROM esta definido.
 	*/
 	static void store();
 #endif
@@ -186,17 +190,17 @@ struct Turnout{
 #endif
 
 #if defined(USE_TEXTCOMMAND)
-	/** Do command according to the given command string.
-	@param c string to interpret... See syntax in class description.
-	@remark Only available when USE_TEXTCOMMAND is defined.
+	/** Ejecuta el comando de acuerdo con la cadena de comando dada.
+	@param cadena c para interpretar... Consulte la sintaxis en la descripción de la clase.
+	@remark Solo disponible cuando USE_TEXTCOMMAND esta definido.
 	*/
 	static bool parse(char *c);
 	/** Creates a new turnout in the list..
-	@param id The numeric ID (0-32767) of the sensor.
-	@param add	The primary address of the decoder controlling this turnout (0-511).
-	@param subAdd	The sub-address of the decoder controlling this turnout (0-3).
-	@remark Should not be used in C++ mode.
-	@remark Only available when USE_TEXTCOMMAND is defined.
+	@param id El ID numérico (0-32767) del desvío a controlar.
+	@param add	La dirección principal del decodificador que controla este desvío (0-511).
+	@param subAdd	La subdirección del decodificador que controla este desvío (0-3).
+	@remark No debe usarse en modo C++.
+	@remark Solo disponible cuando USE_TEXTCOMMAND esta definido.
 	*/
 	static Turnout *create(int id, int add, int subAdd);
 #endif

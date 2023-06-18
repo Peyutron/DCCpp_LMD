@@ -75,7 +75,7 @@ void FunctionsState::printActivated()
 		if (this->isActivated(i))
 		{
 			Serial.print(i);
-			Serial.print(" ");
+			Serial.print(F(" "));
 		}
 	}
 
@@ -132,7 +132,13 @@ void DCCpp::loop()
 	Sensor::check();    // check sensors for activated or not
 #endif
 #ifdef USE_OLED
-	 Oled::updateOled();
+    if (!Oled::Menu_On_Off)Oled::initScreen();
+	// Oled::initScreen();
+	 //Oled::updateOled();
+#endif
+#ifdef USE_KEYBOARD
+	if(!Oled::Menu_On_Off) Keyboard::KeyLoop();
+	else Oled::MenuKeyboard();
 #endif
 }
 
@@ -156,7 +162,7 @@ void DCCpp::beginMain(uint8_t inSignalPin, uint8_t inSignalEnable, uint8_t inCur
 	if (inSignalPin == UNDEFINED_PIN)
 	{
 	#ifdef DCCPP_DEBUG_MODE
-		CommManager::printf("No hay via principal");
+		CommManager::printf(F("No hay via principal"));
 	#endif
 		return;
 	}
@@ -243,6 +249,12 @@ void DCCpp::begin()
 #ifdef USE_OLED
 	Oled::init();
 #endif
+#ifdef USE_KEYBOARD
+	Keyboard::init();
+#endif
+	#ifdef USE_ENCODER
+	Keyboard::initEncoder();
+	#endif
 #ifdef DCCPP_DEBUG_MODE
 	//pinMode(LED_BUILTIN, OUTPUT);
 	CommManager::printf("begin achieved");
@@ -301,7 +313,7 @@ void DCCpp::showConfiguration()
 	DCCPP_INTERFACE.print(F("\n\n   PANTALLA OLED 128x64  : "));
 	DCCPP_INTERFACE.println(OLED_NAME);
 	DCCPP_INTERFACE.print(F("   DIRECCION: "));
-	DCCPP_INTERFACE.println(OLED_ADDRESS, HEX);
+	// DCCPP_INTERFACE.println(OLED_ADDRESS, HEX);
 #endif
 
 	//Serial.print(F("\nARDUINO:      "));
@@ -418,7 +430,7 @@ void DCCpp::panicStop(bool inStop)
 	panicStopped = inStop;
 
 #ifdef DCCPP_DEBUG_MODE
-	CommManager::printf("PanicStop ");
+	CommManager::printf(F("PanicStop "));
 	Serial.print(F("DCCpp PanicStop "));
 	Serial.println(inStop ? F("pressed"):F("canceled"));
 #endif
@@ -452,7 +464,7 @@ void DCCpp::powerOn(bool inMain, bool inProg)
 	{	
 		CommManager::printf("<p1>");
 		#ifdef USE_OLED
-	  		Oled::showOledOn(true);   // Pantalla encendida
+	  		Oled::OledDCCon(true);   // Pantalla encendida
 		#endif
 	  	#ifdef USE_SOUND
 	  		Sound::SoundOn();	// Enciende Sonido
@@ -480,7 +492,7 @@ void DCCpp::powerOff(bool inMain, bool inProg)
 	{		
 		CommManager::printf("<p0>");
 		#ifdef USE_OLED
-	  		Oled::showOledOn(false);   // OLED
+	  		Oled::OledDCCon(false);   // OLED
 		#endif
 	  	#ifdef USE_SOUND
 			Sound::SoundOff(); 
@@ -520,12 +532,12 @@ void DCCpp::setFunctions(volatile RegisterList *inpRegs, int nReg, int inLocoId,
 	if (inpRegs == &mainRegs)
 	{
 		if (nReg > MAX_MAIN_REGISTERS)
-			CommManager::printf("Invalid register number on main track.");
+			CommManager::printf(F("Invalid register number on main track."));
 	}
 	else
 	{
 		if (nReg > MAX_PROG_REGISTERS)
-			CommManager::printf("Invalid register number on programming track.");
+			CommManager::printf(F("Invalid register number on programming track."));
 	}
 #endif
 	byte flags = 0;
@@ -641,7 +653,7 @@ void DCCpp::setFunctions(volatile RegisterList *inpRegs, int nReg, int inLocoId,
 #ifdef DCCPP_DEBUG_MODE
 	Serial.print(F("DCCpp SetFunctions for loco"));
 	Serial.print(inLocoId);
-	Serial.print(" / Activated : ");
+	Serial.print(F(" / Activated : "));
 	inStates.printActivated();
 #endif
 }

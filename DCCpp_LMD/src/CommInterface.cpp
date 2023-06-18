@@ -46,7 +46,14 @@ void CommManager::printf(const char *fmt, ...) {
 	#endif
 	#ifdef USE_SERIALAUX
 		SERIALAUX.print(buf);
-	#endif	
+	#endif
+	#ifdef USE_OLED
+		// Serial.print( "buf: "); Serial.println(buf);
+		Oled::Monitor(buf);
+	#endif
+	
+
+
 	/*#if !defined(USE_ETHERNET)
 		DCCPP_INTERFACE.println("");	
 	#endif*/	

@@ -6,45 +6,121 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
-// DEFINE LA DIRECCION DEL LA PANTALLA OLED SSD1306
-#define OLED_ADDRESS 0x3C
+// ACTIVA ANIMACIONES OLED
+ #define OLED_ANIMATION
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+//// Define el número de desvíos que hay en la maqueta para poder almacenar su estado 
+#define N_DESVIOS 10 // 10, 20, 30... 
+
+/////////////////////////////////////////////////////////////////////////////////////
+//
+// DEFINE LA DIRECCION DE LA PANTALLA OLED SSD1306
+#define DCCPP_VERSION1 "DCCpp LMD "
+#define DCCPP_VERSION2 "2.0.4"
 #define OLED_NAME "SSD1306"
-#define COMM_NAME "SERIAL/BT"
-#define LIBRARY_VERSIONL1 "DCCpp library:"
-#define LIBRARY_VERSIONL2 "1.4.2"
+#define COMM_NAME "SERIAL ONLY"
+#define ACTUALIZA_INFO 750  // Actualiza cada 750ms, con menos deja de funcionar correctamente S88
+#define PAUSA_          2  // Pausa de 6 segundos para mostrar la información. 14x250 = 3500ms
+
+#define ACCESORIO 1
+#define SENSORES  2
+#define SALIDAS   3
+#define S_88       4
+#define MENU_ITEMS 5
+#define MLOC 1
+#define MDES 2
+#define MOUT 3
+#define MSEN 4
+#define MFUN 5
+#define MACC 6
+#define MLIST 7
+#define GRUPO_F04 1
+#define GRUPO_F58 2
+#define GRUPO_F0912 3
+#define GRUPO_F1320 4
+#define GRUPO_F2128 5
+
 
 class Oled {
   public:
+    static bool Menu_On_Off;
+    static bool PrintScreen;
+    static int8_t nMenu;
     static void init();
-    static void clear();
-    static void showOledOn(bool);
-    static void Monitor(char *m);
+    static void initScreen();   
 
+    static void OledDCCon(bool);
     static void GetThrottle(int, int, int );
-    static void GetAccesories(int, int, int);
+    static void GetAccesories(uint8_t, uint8_t, uint8_t);
     #ifdef USE_S88
-    static void GetS88(int, int);
+    static void GetS88(uint8_t, uint8_t);
     static void GetS88Binary(String);
     #endif
-    static void GetSensor(int, int);
-    static void GetOutput(int, int, int);  
+    static void GetSensor(uint8_t, uint8_t);
+    static void GetOutput(uint8_t, uint8_t, uint8_t);  
+    static void Monitor(char *m);
+
+    // Muestra IP en pantalla de inicio
+    static void printWifiIp(String);
+    // Muestra en pantalla la cantidad de Sram disponible
+    static void printSram (uint16_t);
+    // Muestra en numero de listados de un desvio / Sensor / Salida
+    static void printList(int, int);
+    // Imprime en la pantalla que se ha definido un desvío
+    static void printDefined(int, int, int, int);
+    // Imprime en la pantalla que se ha Guardado un desvío /Identificador/id/direccion/subdireccion
+    static void printSaved(bool);                 
+    // Imprime en pantalla que se ha eliminado un desvío /Identificador
+    static void printDelete(int, bool, int); 
+    // Aviso borrado de memoria
+    static void printDeleteMemory();              
+    //ERROR id no disponible
+    static void printErrorList(int);       
+    static void MenuKeyboard();
+    // Actualiza la patalla desde loop();
+    // static void updateOled();          
+    // ERROR no definido
+    // static void printErrorOptionUndefined(int);   
+    // Cv - 1-1024  , resultado
+    // static void printReadCv(int, int); 
     
-    static void printWifiIp(String);              // Muestra IP en pantall de inicio
-    static void printSram (int);                  // Muestra en pantalla la cantidad de Sram disponible
-    static void printList(int, int);		          // Muestra en numero de listados de un desvio / Sensor / Salida
-    static void printDefined(int, int, int, int); // Imprime en la pantalla que se ha definido un desvío
-    static void printSaved(bool);                 // Imprime en la pantalla que se ha Guardado un desvío /Identificador/id/direccion/subdireccion
-    static void printDelete(int, bool, int);      // Imprime en pantalla que se ha eliminado un desvío /Identificador
-    static void printDeleteMemory();              // Aviso borrado de memoria
-    static void printErrorList(int);       //ERROR id no disponible
 
-    // static void printErrorOptionUndefined(int);   //ERROR no definido
-    static void updateOled();          // Actualiza la patalla desde loop();
-    static void printReadCv(int, int); // Cv - 1-1024  , resultado
+    
 
-  private:
-    static bool _enabled;
-    static void initScreen();
+
+   private:
+    // Imprime los datos seriales en la parte superior izquierda de la pantalla.
+    static void printSerial();
+    // Selecciona los diferentes dispositivos de comunicación
+    static String SwInput();
+    #ifdef USE_KEYBOARD
+    static void ClearNumbers();
+    // Keyboard: '1': Pantalla para control de locomotoras.
+    static void LocomotiveOled();
+    // Keyboard: '2': Pantalla para control de desvíos.
+    static void TurnoutOled();
+    // Keyboard: '3': Pantalla contol accesorios.
+    static void AccesoryOled();     
+    // Keyboard: '0': Muestra una lista con las opciones disponibles.
+    static void MenuLista();
+    // Keyboard: '#': Sale de la pantalla seleccionada.
+    static void ExitPage();
+    // Envia el comando a TextCommand::parse();         
+    static void SendCommand(String);
+    // Crea un comando para maquina.
+    static String CreateLocoCommand();
+    // Crea un comando para una función de máquina.
+    static String CreateFunctionCommand(uint8_t);
+    // Crea un comando para un desvío.
+    static String CreateTurnoutCommand();
+    // Crea un comando para un accesorio.
+    static String CreateAccesoryCommand();
+    // Funcion para un número entero desde un array de 3 posiciones
+    static uint8_t GetNumber(char nList[]);
+    #endif
+
 };
 #endif
 
@@ -319,3 +395,9 @@ class Oled {
 //U8G2_GU800_128X64_1_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 13, /* data=*/ 11, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 //U8G2_GU800_128X64_1_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/ 10, /* dc=*/ 9, /* reset=*/ 8);
 
+/* FONTS:
+-dibujo
+- u8g2_font_streamline_all_t
+- u8g2_font_10x20_tf
+- u8g2_font_ncenR14_te
+*/

@@ -44,8 +44,6 @@
   Successfully tested with both Lormedy S88-N 8E/16E and Littfinski RM-GB-8-N modules
 
 **********************************************************************/
-#include "Arduino.h"
-
 
 #include "DCCpp.h"
 #include "CommInterface.h"
@@ -68,9 +66,9 @@
 uint8_t  M=0;                // value read in EEPROM
 uint8_t  N_size = 8;         // S88 byte size as a group of 8 sensors
 uint8_t  Old_N=0;            // S88 byte number, default = 0
-uint8_t  N=2;               // S88 byte number, default = 64 // Modificado!!! 
+uint8_t  N=2;               // S88 byte number, default = 64 // Modificado!!!************
 uint16_t Nr=0;               // S88 Bits quantity = N*8
-uint8_t  DataFormat = 0;     // Output DataFormat 0=binary 1=hexa 2=Q ID; 9=disabled // Modificado!!!*** con 3 funciona rocrail!!!!
+uint8_t  DataFormat = 0;     // Output DataFormat 0=binary 1=hexa 2=Q ID; 9=disabled // Modificado!!!*********** con 3 funciona rocrail!!!!
 uint8_t  Mode = 0;           // Output Format for extra software TBD
 uint8_t  Old_DataFormat = 0; // Output DataFormat 0=binary 1=hexa
 String   Old_Occ;            // S88 detector previous status
@@ -171,7 +169,7 @@ void S88::check() {
               String tmp = OccL.substring(s88index, s88index + 1);
               String Old_tmp = Old_Occ.substring(s88index, s88index + 1);
               if (tmp[0] != Old_tmp[0]) {
-                bool estado;
+               bool estado;
                 if (tmp[0] == '0'){
                   estado = true;
                   CommManager::printf("<q %d>", s88index+1);
@@ -182,26 +180,24 @@ void S88::check() {
                 #ifdef USE_OLED
                   Oled::GetS88(s88index+1 , estado); // OLED = muestra en pantalla guadado fallido
                 #endif
-                /*#ifdef USE_SOUND
-                  Sound::ActionOK();
-                #endif*/  
-          
- /*           //DCCPP_INTERFACE.println(((tmp[0] == '0') ? "<q " : "<Q ") + String(s88index+1) + ">"); // s88index range 0..511
 
+                
+
+                 DCCPP_INTERFACE.println(((tmp[0] == '0') ? "<q " : "<Q ") + String(s88index+1) + ">"); // s88index range 0..511
+/*
                 DCCPP_INTERFACE.print( (tmp[0] == '0') ? "<q " : "<Q " );
                 DCCPP_INTERFACE.print(s88index+1); // s88index range 0..511
                 DCCPP_INTERFACE.print(">");
-
-                #if !defined(USE_ETHERNET)
-                  DCCPP_INTERFACE.println("");
-                #endif*/
+*/
+#if !defined(USE_ETHERNET)
+                DCCPP_INTERFACE.println("");
+#endif
               }
             }
           }
 
           if (DataFormat < 3) {
-            S88Status += ">";                        // end of feedback (CDT3x, WDD, TCOwifi, or CDM-Rail)
-          // Length (with one extra character for the null terminator)
+          S88Status += ">";                        // end of feedback (CDT3x, WDD, TCOwifi, or CDM-Rail)
           int str_len = S88Status.length() + 1; 
           char char_array[str_len];
           S88Status.toCharArray(char_array, str_len);
@@ -213,13 +209,10 @@ void S88::check() {
             Sound::SensorAction();
          #endif  
 
-
-
-
-            //DCCPP_INTERFACE.println("estado " + S88Status);    // send automaticly data at each sensors state change
-            /*#if !defined(USE_ETHERNET)
+/*            DCCPP_INTERFACE.println(S88Status);    // send automaticly data at each sensors state change
+#if !defined(USE_ETHERNET)
             DCCPP_INTERFACE.println("");
-            #endif*/
+#endif*/
           }
 
           Old_Occ = OccL;      // save data
@@ -235,7 +228,6 @@ void S88::check() {
       break;
   }   // end of switch (S88_Cpt)
 }     // end of S88::check
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // DCCPP_INTERFACE with CDT3x, controller, TCOWiFi, CDM-Rail, JMRI and Rocrail softwares

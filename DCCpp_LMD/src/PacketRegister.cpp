@@ -78,15 +78,15 @@ void RegisterList::loadPacket(int nReg, byte *b, int nBytes, int nRepeat, int pr
 #ifdef VISUALSTUDIO
   return;
 #endif
-  nReg=nReg%((maxNumRegs+1));          // force nReg to be between 0 and maxNumRegs, inclusive
+  nReg=nReg%((maxNumRegs+1));          // obliga a nReg a estar entre 0 y maxNumRegs, inclusive
 
   while(nextReg!=NULL);              // pause while there is a Register already waiting to be updated -- nextReg will be reset to NULL by interrupt when prior Register updated fully processed
  
-  if(regMap[nReg]==NULL)              // first time this Register Number has been called
+  if(regMap[nReg]==NULL)              // primera vez que se llama a este número de registro
    regMap[nReg]=maxLoadedReg+1;       // set Register Pointer for this Register Number to next available Register
  
-  Register *r=regMap[nReg];           // set Register to be updated
-  Packet *p=r->updatePacket;          // set Packet in the Register to be updated
+  Register *r=regMap[nReg];           // establece Registro para ser actualizado
+  Packet *p=r->updatePacket;          // establece el paquete en el registro para que se actualice
   byte *buf=p->buf;                   // set byte buffer in the Packet to be updated
 		  
   b[nBytes]=b[0];                        // copy first byte into what will become the checksum byte  
@@ -143,10 +143,10 @@ void RegisterList::setThrottle(int nReg, int cab, int tSpeed, int tDirection) vo
 	byte nB = 0;
 
 	if (cab>127)
-		b[nB++] = highByte(cab) | 0xC0;      // convert train number into a two-byte address
+		b[nB++] = highByte(cab) | 0xC0;      // convierte el número de tren en una dirección de dos bytes
 
 	b[nB++] = lowByte(cab);
-	b[nB++] = 0x3F;                        // 128-step speed control byte
+	b[nB++] = 0x3F;                        // byte de control de velocidad de 128 pasos
 	if (tSpeed >= 0)
 		b[nB++] = tSpeed + (tSpeed>0) + tDirection * 128;   // max speed is 126, but speed codes range from 2-127 (0=stop, 1=emergency stop)
 	else {
@@ -177,6 +177,9 @@ void RegisterList::setThrottle(const char *s) volatile
 		CommManager::printf("<X>");	 	
 		#ifdef USE_SOUND
 			Sound::ActionError();
+		#endif
+		#ifdef USE_OLED
+			Oled::Monitor("t Syntax error");
 		#endif
 #ifdef DCCPP_DEBUG_MODE
     Serial.println(F("t Syntax error"));
@@ -209,9 +212,9 @@ void RegisterList::setFunction(int nReg, int cab, int fByte, int eByte) volatile
 	}
 	CommManager::printf("<F%d %d %d %d>", nReg, cab, fByte, eByte);	 
 
-	/* NMRA DCC norm ask for two DCC packets instead of only one:
-	"Command Stations that generate these packets, and which are not periodically refreshing these functions,
-	must send at least two repetitions of these commands when any function state is changed."
+	/* La norma NMRA DCC solicita dos paquetes DCC en lugar de uno solo:
+	"Command Stations genera estos paquetes y que no actualizan periódicamente estas funciones,
+	debe enviar al menos dos repeticiones de estos comandos cuando se cambia el estado de cualquier función.."
 	https://www.nmra.org/sites/default/files/s-9.2.1_2012_07.pdf
 	*/
 	loadPacket(nReg, b, nB, 4, 1);
@@ -220,6 +223,7 @@ void RegisterList::setFunction(int nReg, int cab, int fByte, int eByte) volatile
 #ifdef USE_TEXTCOMMAND
 void RegisterList::setFunction(const char *s) volatile
 {
+	Serial.println(s);
 	int reg, cab;
 	int fByte, eByte;
 
@@ -254,9 +258,12 @@ void RegisterList::setFunction(const char *s) volatile
 		break;
 
 	default:
-		Serial.println(F("f Syntax error"));
+		Serial.println(F("f Syntax error functions"));
 	#ifdef USE_SOUND
 		Sound::ActionError();
+	#endif
+	#ifdef USE_OLED
+		Oled::Monitor("func Syntax error");
 	#endif
 		return;
 	}
@@ -282,15 +289,17 @@ void RegisterList::setAccessory(int aAdd, int aNum, int activate) volatile
 #ifdef USE_TEXTCOMMAND
 void RegisterList::setAccessory(const char *s) volatile
 {
-	int aAdd;                       // the accessory address (0-511 = 9 bits) 
-	int aNum;                       // the accessory number within that address (0-3)
-	int activate;                   // flag indicated whether accessory should be activated (1) or deactivated (0) following NMRA recommended convention
-
+	int aAdd;                       // la dirección del accesorio (0-511 = 9 bits)
+	int aNum;                       // el número de accesorio dentro de esa dirección (0-3)
+	int activate;                   // flag que indica si el accesorio debe activarse (1) o desactivarse (0) siguiendo la convención recomendada por NMRA
 	if (sscanf(s, "%d %d %d", &aAdd, &aNum, &activate) != 3)
 	{
 		CommManager::printf("<X>");	 	
 		#ifdef USE_SOUND
 			Sound::ActionError();
+		#endif
+		#ifdef USE_OLED
+			Oled::Monitor("Syntax error");
 		#endif
 #ifdef DCCPP_DEBUG_MODE
 		Serial.println(F("a Syntax error"));
@@ -318,7 +327,7 @@ void RegisterList::writeTextPacket(int nReg, byte *b, int nBytes) volatile
 		#ifdef USE_SOUND
 			Sound::ActionError();
 		#endif
-		DCCPP_INTERFACE.print("<mInvalid Packet>");
+		CommManager::printf("<mInvalid Packet>");
 		#if !defined(USE_ETHERNET)
 			DCCPP_INTERFACE.println("");
 		#endif
@@ -391,7 +400,7 @@ bool RegisterList::checkAcknowlegde(int inMonitorPin, int inBase) volatile
 #ifdef DCCPP_DEBUG_MODE
 	Serial.print(F(" iter : "));
 	Serial.print(loop);
-	Serial.print(", max : ");
+	Serial.print(F(", max : "));
 	Serial.println(max);
 #endif
 
@@ -436,10 +445,10 @@ int RegisterList::readCVraw(int cv, int callBack, int callBackSub) volatile
 
 		bRead[2] = 0xE8 + i;
 
-		loadPacket(0, resetPacket, 2, 3);			// NMRA recommends starting with 3 reset packets
-		loadPacket(0, bRead, 3, 5);           // NMRA recommends 5 verify packets
-		//loadPacket(0, resetPacket, 2, 1);   // forces code to wait until all repeats of bRead are completed (and decoder begins to respond)
-		loadPacket(0, idlePacket, 2, 6);      // NMRA recommends 6 idle or reset packets for decoder recovery time
+		loadPacket(0, resetPacket, 2, 3);			// NMRA recomienda comenzar con 3 paquetes de reinicio
+		loadPacket(0, bRead, 3, 5);           // NMRA recomienda 5 paquetes de verificación
+		//loadPacket(0, resetPacket, 2, 1);   // obliga al código a esperar hasta que se completen todas las repeticiones de bRead (y el decodificador comience a responder)
+		loadPacket(0, idlePacket, 2, 6);      // NMRA recomienda 6 paquetes inactivos o de reinicio para el tiempo de recuperación del decodificador
 
 #if defined(ARDUINO_ARCH_ESP32)
 		delay(2);
@@ -463,10 +472,10 @@ int RegisterList::readCVraw(int cv, int callBack, int callBackSub) volatile
 	bRead[0] = 0x74 + (highByte(cv) & 0x03);   // set-up to re-verify entire byte
 	bRead[2] = bValue;
 
-	loadPacket(0, resetPacket, 2, 3);       // NMRA recommends starting with 3 reset packets
-	loadPacket(0, bRead, 3, 5);             // NMRA recommends 5 verify packets
+	loadPacket(0, resetPacket, 2, 3);       // NMRA recomienda comenzar con 3 paquetes de reinicio
+	loadPacket(0, bRead, 3, 5);             // NMRA recomienda 5 paquetes de verificación
 	//loadPacket(0, resetPacket, 2, 1);     // forces code to wait until all repeats of bRead are completed (and decoder begins to respond)
-	loadPacket(0, idlePacket, 2, 6);				// NMRA recommends 6 idle or reset packets for decoder recovery time
+	loadPacket(0, idlePacket, 2, 6);				// NMRA recomienda 6 paquetes inactivos o de reinicio para el tiempo de recuperación del decodificador
 
 #if defined(ARDUINO_ARCH_ESP32)
 		delay(2);
@@ -474,7 +483,7 @@ int RegisterList::readCVraw(int cv, int callBack, int callBackSub) volatile
 
 	ret = RegisterList::checkAcknowlegde(MonitorPin, base);
 
-	if (ret == 0)    // verify unsuccessful
+	if (ret == 0)    // verificación sin éxito
 		bValue = -1;
 
 
@@ -497,7 +506,13 @@ int RegisterList::readCV(const char *s) volatile
 	int cv, callBack, callBackSub;
 
 	if (sscanf(s, "%d %d %d", &cv, &callBack, &callBackSub) != 3)          // cv = 1-1024
-	{
+	{	
+		#ifdef USE_SOUND
+			Sound::ActionError();
+		#endif
+		#ifdef USE_OLED
+			Oled::Monitor("Syntax error");
+		#endif
 #ifdef DCCPP_DEBUG_MODE
 		Serial.println(F("R Syntax error"));
 #endif
@@ -524,6 +539,9 @@ int RegisterList::readCVmain(const char *s) volatile
 		#ifdef USE_SOUND
 			Sound::ActionError();
 		#endif
+		#ifdef USE_OLED
+			Oled::Monitor("Syntax error");
+		#endif
 		#ifdef DCCPP_DEBUG_MODE
 			CommManager::printf("r Syntax error");
 		#endif
@@ -548,26 +566,26 @@ bool RegisterList::writeCVByte(int cv, int bValue, int callBack, int callBackSub
 	bWrite[1] = lowByte(cv);
 	bWrite[2] = bValue;
 
-	loadPacket(0, resetPacket, 2, 3);        // NMRA recommends starting with 3 reset packets
-	loadPacket(0, bWrite, 3, 5);             // NMRA recommends 5 verify packets
-	loadPacket(0, bWrite, 3, 6);             // NMRA recommends 6 write or reset packets for decoder recovery time
+	loadPacket(0, resetPacket, 2, 3);        // NMRA recomienda comenzar con 3 paquetes de reinicio
+	loadPacket(0, bWrite, 3, 5);             // NMRA recomienda 5 paquetes de verificación
+	loadPacket(0, bWrite, 3, 6);             // NMRA recomienda 6 paquetes de escritura o reinicio para el tiempo de recuperación del decodificador
 
 	/*loadPacket(0, resetPacket, 2, 1);
 	loadPacket(0, bWrite, 3, 4);
 	loadPacket(0, resetPacket, 2, 1);
 	loadPacket(0, idlePacket, 2, 10);*/
 
-	// If monitor pin undefined, write cv without any confirmation...
+	// Si el pin del monitor no está definido, escribira cv sin confirmación...
 	if (DCCppConfig::CurrentMonitorProg != UNDEFINED_PIN){
 
 		base = RegisterList::buildBaseAcknowlegde(DCCppConfig::CurrentMonitorProg);
 
 		bWrite[0] = 0x74 + (highByte(cv) & 0x03);   // set-up to re-verify entire byte
 
-		loadPacket(0, resetPacket, 2, 3);          // NMRA recommends starting with 3 reset packets
-		loadPacket(0, bWrite, 3, 5);               // NMRA recommends 5 verify packets
+		loadPacket(0, resetPacket, 2, 3);          // NMRA recomienda comenzar con 3 paquetes de reinicio
+		loadPacket(0, bWrite, 3, 5);               // NNMRA recomienda 5 paquetes de verificación
 		//loadPacket(0, resetPacket, 2, 1);          // forces code to wait until all repeats of bRead are completed (and decoder begins to respond)
-		loadPacket(0, bWrite, 3, 6);               // NMRA recommends 6 write or reset packets for decoder recovery time
+		loadPacket(0, bWrite, 3, 6);               // NMRA recomienda 6 paquetes de escritura o reinicio para el tiempo de recuperación del decodificador
 
 		ret = RegisterList::checkAcknowlegde(DCCppConfig::CurrentMonitorProg, base);
 
@@ -592,6 +610,9 @@ bool RegisterList::writeCVByte(const char *s) volatile
 		CommManager::printf("<X>");	 	
 		#ifdef USE_SOUND
 			Sound::ActionError();
+		#endif
+		#ifdef USE_OLED
+			Oled::Monitor("Syntax error");
 		#endif
 		#ifdef DCCPP_DEBUG_MODE
 			CommManager::printf("W Syntax error");
@@ -624,9 +645,9 @@ bool RegisterList::writeCVBit(int cv, int bNum, int bValue, int callBack, int ca
 	loadPacket(0, resetPacket, 2, 1);
 	loadPacket(0, idlePacket, 2, 10);*/
 
-	loadPacket(0, resetPacket, 2, 3);        // NMRA recommends starting with 3 reset packets
-	loadPacket(0, bWrite, 3, 5);             // NMRA recommends 5 verify packets
-	loadPacket(0, bWrite, 3, 6);             // NMRA recommends 6 write or reset packets for decoder recovery time
+	loadPacket(0, resetPacket, 2, 3);        // NMRA recomienda comenzar con 3 paquetes de reinicio
+	loadPacket(0, bWrite, 3, 5);             // NMRA recomienda 5 paquetes de verificación
+	loadPacket(0, bWrite, 3, 6);             // NMRA recomienda 6 paquetes de escritura o reinicio para el tiempo de recuperación del decodificador
 
 	// If monitor pin undefined, write cv without any confirmation...
 	if (DCCppConfig::CurrentMonitorProg != UNDEFINED_PIN)
@@ -635,16 +656,16 @@ bool RegisterList::writeCVBit(int cv, int bNum, int bValue, int callBack, int ca
 
 		bitClear(bWrite[2], 4);              // change instruction code from Write Bit to Verify Bit
 
-		loadPacket(0, resetPacket, 2, 3);          // NMRA recommends starting with 3 reset packets
-		loadPacket(0, bWrite, 3, 5);               // NMRA recommends 5 verfy packets
-		//loadPacket(0, resetPacket, 2, 1);          // forces code to wait until all repeats of bRead are completed (and decoder begins to respond)
-		loadPacket(0, bWrite, 3, 6);           // NMRA recommends 6 write or reset packets for decoder recovery time
+		loadPacket(0, resetPacket, 2, 3);      // NMRA recomienda comenzar con 3 paquetes de reinicio
+		loadPacket(0, bWrite, 3, 5);           // NMRA recomienda 5 paquetes de verificación
+		//loadPacket(0, resetPacket, 2, 1);    // forces code to wait until all repeats of bRead are completed (and decoder begins to respond)
+		loadPacket(0, bWrite, 3, 6);           // NMRA recomienda 6 paquetes de escritura o reinicio para el tiempo de recuperación del decodificador
 
 		ret = RegisterList::checkAcknowlegde(DCCppConfig::CurrentMonitorProg, base);
 
-		loadPacket(0, resetPacket, 2, 1);      // Final reset packetcompleted (and decoder begins to respond)
+		loadPacket(0, resetPacket, 2, 1);      // Paquete de reinicio final completado (y el decodificador comienza a responder)
 
-		if (ret != 0)    // verify successful
+		if (ret != 0)    // Verificación exitosa
 			ok = true;
 	}
 
@@ -662,8 +683,11 @@ bool RegisterList::writeCVBit(const char *s) volatile {
 		#ifdef USE_SOUND
 			Sound::ActionError();
 		#endif
+		#ifdef USE_OLED
+			Oled::Monitor("Syntax error");
+		#endif
 		#ifdef DCCPP_DEBUG_MODE
-	  		CommManager::printf("W Syntax error");
+	  		CommManager::printf(F("W Syntax error"));
 		#endif
 	  	return false;
   }
@@ -682,7 +706,7 @@ void RegisterList::writeCVByteMain(int cab, int cv, int bValue) volatile
 	cv--;
 
 	if (cab>127)
-		b[nB++] = highByte(cab) | 0xC0;      // convert train number into a two-byte address
+		b[nB++] = highByte(cab) | 0xC0;      // convierte el número de tren en una dirección de dos bytes
 
 	b[nB++] = lowByte(cab);
 	b[nB++] = 0xEC + (highByte(cv) & 0x03);   // any CV>1023 will become modulus(1024) due to bit-mask of 0x03
@@ -706,8 +730,11 @@ void RegisterList::writeCVByteMain(const char *s) volatile
 		#ifdef USE_SOUND
 			Sound::ActionError();
 		#endif
+		#ifdef USE_OLED
+			Oled::Monitor("Syntax error");
+		#endif
 		#ifdef DCCPP_DEBUG_MODE
-			CommManager::printf("w Syntax error");
+			CommManager::printf(F("w Syntax error"));
 		#endif
 		return;
 	}
@@ -729,7 +756,7 @@ void RegisterList::writeCVBitMain(int cab, int cv, int bNum, int bValue) volatil
 	bNum = bNum % 8;
 
 	if (cab>127)
-		b[nB++] = highByte(cab) | 0xC0;      // convert train number into a two-byte address
+		b[nB++] = highByte(cab) | 0xC0;      // convertir el número de tren en una dirección de dos bytes
 
 	b[nB++] = lowByte(cab);
 	b[nB++] = 0xE8 + (highByte(cv) & 0x03);   // any CV>1023 will become modulus(1024) due to bit-mask of 0x03
@@ -754,8 +781,11 @@ void RegisterList::writeCVBitMain(const char *s) volatile
 		#ifdef USE_SOUND
 			Sound::ActionError();
 		#endif
+		#ifdef USE_OLED
+			Oled::Monitor("Syntax error");
+		#endif
 #ifdef DCCPP_DEBUG_MODE
-		CommManager::printf("w Syntax error");
+		CommManager::printf(F("w Syntax error"));
 #endif
 		return;
 	}
@@ -769,25 +799,25 @@ void RegisterList::writeCVBitMain(const char *s) volatile
 #ifdef DCCPP_DEBUG_MODE
 void RegisterList::printPacket(int nReg, byte *b, int nBytes, int nRepeat) volatile 
 {  
-	DCCPP_INTERFACE.print("<*");
+	DCCPP_INTERFACE.print(F("<*"));
 	DCCPP_INTERFACE.print(nReg);
-	DCCPP_INTERFACE.print(":");
+	DCCPP_INTERFACE.print(F(":"));
   for(int i=0;i<nBytes;i++){
-	  DCCPP_INTERFACE.print(" ");
+	  DCCPP_INTERFACE.print(F(" "));
 	  DCCPP_INTERFACE.print(b[i],HEX);
   }
-  DCCPP_INTERFACE.print(" / ");
+  DCCPP_INTERFACE.print(F(" / "));
   DCCPP_INTERFACE.print(nRepeat);
-  DCCPP_INTERFACE.print(">");
+  DCCPP_INTERFACE.print(F(">");
 #if !defined(USE_ETHERNET)
-  DCCPP_INTERFACE.println("");
+  DCCPP_INTERFACE.println(F("");
 #endif
 } // RegisterList::printPacket()
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 
-byte RegisterList::idlePacket[3]={0xFF,0x00,0};                 // always leave extra byte for checksum computation
+byte RegisterList::idlePacket[3]={0xFF,0x00,0};	// siempre deje un byte adicional para el cálculo de la suma de comprobación
 byte RegisterList::resetPacket[3]={0x00,0x00,0};
 
-byte RegisterList::bitMask[]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01};         // masks used in interrupt routine to speed the query of a single bit in a Packet
+byte RegisterList::bitMask[]={0x80,0x40,0x20,0x10,0x08,0x04,0x02,0x01}; // máscaras utilizadas en la rutina de interrupción para acelerar la consulta de un solo bit en un paquete

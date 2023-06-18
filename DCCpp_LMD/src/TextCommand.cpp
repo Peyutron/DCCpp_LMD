@@ -24,7 +24,7 @@ extern unsigned int __heap_start;
 extern void *__brkval;
 #endif
 
-String serialInUse[4] = {"no", "no", "no"}; // Para CommInterface en comando 's'
+String serialInUse[3] = {"no", "no", "no"}; // Para CommInterface en comando 's'
 String info_vers;	// Para CommInterface en comando 's'
 String info_serial;	// Para CommInterface en comando 's'
 int nElemento[4] = {0, 0, 0}; 	// Para CommInterface en comando 'E'
@@ -94,6 +94,7 @@ void TextCommand::process(){
 ///////////////////////////////////////////////////////////////////////////////
 
 bool TextCommand::parse(char *com){
+
 #ifdef DCCPP_DEBUG_MODE
 	Serial.print(com[0]);
 	Serial.println(F(" command"));
@@ -103,6 +104,7 @@ bool TextCommand::parse(char *com){
 #endif
 
 #ifdef USE_OLED
+		// Serial.println(F(" command"));
 	if (com[0] != 'c') Oled::Monitor(com);    // OLED para que no muestre el consumo con cada consulta
 #endif
 
@@ -117,25 +119,25 @@ switch(com[0]){
     com[5] = '3';
     com[6] = '\0';
 
-		
-    case 'Y':       // <Y Nb_S88_Modules DataFormat> for initialisation or <Y> for occupancy feedback
+    //return true; // NUEVA LINEA 
+
+    case 'Y':       // <Y Nb_S88_Modules DataFormat> para inicialización o <Y> para feedback de ocupación
 /*
  *   <Y Nb_S88_Bytes DataFormat>:            sets Nb_S88_Modules read with output DataFormat
- *   <Y>                                     provide occupation feedback
+ *   <Y>                                     proporciona feedback de ocupación 
  *
  *   Nb_S88_Bytes: the byte number (0-64) to read
  *   DataFormat: 0 (Binary) 1 (Hexadecimal)
  *
  *   returns: <o status>, then <y S88_Bytes> or <q/Q n>
  *
- *   *** SEE S88.CPP FOR COMPLETE INFO ON THE DIFFERENT VARIATIONS OF THE "Y" COMMAND
+ *   *** CONSULTE S88.CPP PARA OBTENER INFORMACIÓN COMPLETA SOBRE LAS DIFERENTES VARIACIONES DEL COMANDO "Y"
  *   used to define S88 retrosignalisation definitions
  */
-      //DCCPP_INTERFACE.print("\n<y 00000000>"); or DCCPP_INTERFACE.print("\n<y 00>");
+      // DCCPP_INTERFACE.print("\n<y 00000000>"); or DCCPP_INTERFACE.print("\n<y 00>");
       S88::parse(com +1); // NUEVA LINEA 
       return true;
-      // S88::parse(com+1);
-      // break;
+
 #endif
 
 
@@ -144,7 +146,7 @@ switch(com[0]){
 
 	case 't':       
 		/**	\addtogroup commandsGroup
-		SET ENGINE THROTTLES USING 128-STEP SPEED CONTROL
+		ESTABLECE LOS ACELERADORES UTILIZANDO EL CONTROL DE VELOCIDAD DE 128 PASOS
 		-------------------------------------------------
 
 		<b>
@@ -168,7 +170,7 @@ switch(com[0]){
 
 	case 'f':       
 		/**	\addtogroup commandsGroup
-		OPERATE ENGINE DECODER FUNCTIONS F0-F28
+		FUNCIONES DEL DECODIFICADOR DE OPERACIÓN DE LA MAQUINA F0-F28
 		---------------------------------------
 		
 		<b>
@@ -223,7 +225,7 @@ switch(com[0]){
 
 	case 'a':       
 		/**	\addtogroup commandsGroup
-		OPERATE STATIONARY ACCESSORY DECODERS 
+		OPERAR DECODER DE ACCESORIOS ESTACIONARIO
 		-------------------------------------
 		
 		<b>
@@ -248,13 +250,13 @@ switch(com[0]){
 		- <b>ADDRESS</b> = INT((N - 1) / 4) + 1
 		- <b>SUBADDRESS</b> = (N - 1) % 4
    
-		However, this general command simply sends the appropriate DCC instruction packet to the main tracks
-		to operate connected accessories.  It does not store or retain any information regarding the current
-		status of that accessory. To have this sketch store and retain the direction of DCC-connected turnouts, as 
-		well as automatically invoke the required <b>\<a\></b> command as needed, first define/edit/delete turnouts 
-		using the following variations of the "T" command.
+		Sin embargo, este comando general simplemente envía el paquete de instrucciones DCC apropiado a la pista 
+		principales para operar los accesorios conectados. No almacena ni retiene ninguna información relativa al
+		estado de ese accesorio. Para que este croquis almacene y retenga la dirección de los desvíos conectados 
+		a DCC, así como invocar automáticamente los<b>\<a\></b> comando según sea necesario, primero definir/editar/eliminar desvíos
+		usando las siguientes variaciones del comando "T".
 
-		returns: NONE
+		returns: Sin respuesta
 		*/
 
 	 	DCCpp::mainRegs.setAccessory(com+1);
@@ -264,8 +266,8 @@ switch(com[0]){
 #ifdef USE_TURNOUT
 	case 'T':
 /*
-* *** SEE TURNOUT.CPP FOR COMPLETE INFO ON THE DIFFERENT VARIATIONS OF THE "T" COMMAND
-* USED TO CREATE/EDIT/REMOVE/SHOW TURNOUT DEFINITIONS
+* *** VER TURNOUT.CPP PARA INFORMACIÓN COMPLETA SOBRE LAS DIFERENTES VARIACIONES DEL COMANDO "T"
+* UTILIZADO PARA CREAR/EDITAR/ELIMINAR/MOSTRAR DEFINICIONES DE DESVIOS
 */
 
 		return Turnout::parse(com+1);
@@ -291,6 +293,7 @@ switch(com[0]){
 	return Sensor::parse(com+1);	  
 
 #ifdef DCCPP_PRINT_DCCPP
+#ifndef USE_S88
 	case 'Q':
 		/**	\addtogroup commandsGroup
 		SHOW STATUS OF ALL SENSORS
@@ -307,8 +310,11 @@ switch(com[0]){
 
 	 	Sensor::status();
 		return true;
-#endif
-#endif // USE_SENSOR
+
+#endif	// USE_S88
+#endif	// DCCPP_PRINT_DCCPP
+#endif	// USE_SENSOR
+
 
 	case 'w':      
 		
@@ -322,8 +328,8 @@ switch(com[0]){
 		\endverbatim
 		</b>
 
-		writes, without any verification, a Configuration Variable to the decoder of an engine on the main operations track
-    
+		- Escribe, sin ninguna verificación, una variable de configuración en el decodificador de una locomotora 
+			en la pista de operaciones principal    
 		- <b>CAB</b>:  Dirección corta (1-127) o larga (128-10293) del decoder de la locomotora 
 		- <b>CV</b>: número de la variable de configuracion  (1-1024)
 		- <b>VALUE</b>: Valor que se escribira en la variable de configuración (0-255)
@@ -501,7 +507,7 @@ switch(com[0]){
 
 	case 'c':     
 		/**	\addtogroup commandsGroup
-		READ MAIN OPERATIONS TRACK CURRENT
+		LEE LA CORRIENTE DE LA PISTA DE OPERACIONES ESPECIAL
 		----------------------------------
 
 		<b>
@@ -519,29 +525,25 @@ switch(com[0]){
 		return true;
 
 	case 's':
-	if (DCCppConfig::SignalEnablePinMain == UNDEFINED_PIN || digitalRead(DCCppConfig::SignalEnablePinMain) == HIGH)
-		CommManager::printf("<p0>");
-	if (DCCppConfig::SignalEnablePinProg == UNDEFINED_PIN || digitalRead(DCCppConfig::SignalEnablePinProg) == HIGH)
-		CommManager::printf("<p1>");
+
+	if (digitalRead(DCCppConfig::SignalEnablePinProg) == LOW) // could check either PROG or MAIN
+      CommManager::printf("<p0>");
+    else
+      CommManager::printf("<p1>");
+	
 
 
-	 /* for(int i=1;i<=MAX_MAIN_REGISTERS;i++){
+	 for(int i=1;i<=MAX_MAIN_REGISTERS;i++){
 		if(DCCpp::mainRegs.speedTable[i]==0)
-		  continue;
-		DCCPP_INTERFACE.print("<T");
-		DCCPP_INTERFACE.print(i); DCCPP_INTERFACE.print(" ");
+			continue;
 		if(DCCpp::mainRegs.speedTable[i]>0){
-		  DCCPP_INTERFACE.print(DCCpp::mainRegs.speedTable[i]);
-		  DCCPP_INTERFACE.print(" 1>");
-		} else{
-		  DCCPP_INTERFACE.print(- DCCpp::mainRegs.speedTable[i]);
-		  DCCPP_INTERFACE.print(" 0>");
+			CommManager::printf("<T%d %d 1>", i, DCCpp::mainRegs.speedTable[i]);
+
+		} else {
+			CommManager::printf("<T%d %d 0>", i, - DCCpp::mainRegs.speedTable[i]);
+
 		}          
-#if !defined(USE_ETHERNET)
-		DCCPP_INTERFACE.println("");
-#endif
-	}*/
-	//CommManager::printf("<iDCCpp LIBRARY BASE STATION FOR ARDUINO>");
+	}
 
 	#ifdef USE_SERIALWIFI
 		serialInUse[0] = (String)WIFI;
@@ -553,11 +555,11 @@ switch(com[0]){
 		serialInUse[2] = (String)SERIALAUX;
 	#endif
 		
-	info_vers	= "<iDCCpp-LMD LIBRARY BASE STATION FOR ARDUINO V-" + (String)DCCPP_LIBRARY_VERSION + ">";
-	info_serial	= "<N Wifi: " + serialInUse[0] + " Bluetooth: " + serialInUse[1] +  " Aux: " + serialInUse[2]  + ">";
-	DCCPP_INTERFACE.print(info_vers);
-	DCCPP_INTERFACE.println(info_serial);
-
+	
+	CommManager::printf("<iDCCpp-LMD LIBRARY BASE STATION FOR ARDUINO V-%s", DCCPP_LIBRARY_VERSION );
+	CommManager::printf("<N Wifi: %s Bluetooth: %s Aux: %s>", serialInUse[0], serialInUse[1], serialInUse[2]);
+	
+	
 	#ifdef USE_SERIALWIFI
 		WIFI.println(info_vers);
 		WIFI.println(info_serial);
@@ -589,7 +591,7 @@ switch(com[0]){
 #ifdef USE_EEPROM
 	case 'E':     
 		/**	\addtogroup commandsGroup
-		STORE SETTINGS IN EEPROM
+		ALMACENA CONFIGURACION EL LA MEMORIA EEPROM
 		------------------------
 
 		<b>
@@ -629,10 +631,11 @@ switch(com[0]){
 		<e>
 		\endverbatim
 		</b>
-
-		clears settings for Turnouts in EEPROM
+		
+		Limpia la memoria EEPROM
+		
     
-		returns: <b>\<O\></b>
+		returns: <b>\<O></b>
 		*/
 		EEStore::clear();
 		CommManager::printf("<O>");

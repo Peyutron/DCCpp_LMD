@@ -31,7 +31,8 @@ struct Register{
   void initPackets();
 }; // Register
   
-/** Define a series of registers that can be sequentially accessed over a loop to generate a repeating series of DCC Packets.
+/* Defina una serie de registros a los que se pueda acceder secuencialmente a través 
+ * de un bucle para generar una serie repetitiva de paquetes DCC.
  */
 struct RegisterList{
   int maxNumRegs;

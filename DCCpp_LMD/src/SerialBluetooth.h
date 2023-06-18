@@ -14,7 +14,6 @@ class Bluetooth {
 public:
 	static char btCommandString[BT_MAX_COMMAND_LENGTH+1];
  	static void btprocess();
-	// static void printf(const char *fmt, ...);
 
 };
 

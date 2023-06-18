@@ -23,8 +23,7 @@ COPYRIGHT (c) 2013-2020 Xavier Bouillard & Philippe Chavatte
 #if defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_NANO)      // Configuration for UNO/NANO
   #define S88_Clock_PIN 2       // output, Clock
 #else                                                          // Configuration for MEGA
-  #define S88_Clock_PIN 33      // output, Clock
-  // #define S88_Clock_PIN 26     // output, Clock
+  #define S88_Clock_PIN 33       // output, Clock
 #endif
 
 #define S88_LOAD_PS_PIN 35       // output, Load request for slave devices
@@ -32,12 +31,6 @@ COPYRIGHT (c) 2013-2020 Xavier Bouillard & Philippe Chavatte
 #define S88_DataL_PIN   31       // input,  DataL on left side
 #define S88_DataR_PIN   39       // input,  DataR on right side
 
-
-/*#define S88_LOAD_PS_PIN 27       // output, Load request for slave devices
-#define S88_Reset_PIN   28       // output, Reset request for slave devices
-#define S88_DataL_PIN   22       // input,  DataL on left side
-#define S88_DataR_PIN   23       // input,  DataR on right side
-*/
 struct S88Data {
   int Nn;
 };
@@ -81,40 +74,3 @@ struct S88 {
 
 #endif  // USE_S88
 #endif  // S88_h
-
-
-
-
-
-
-/*  DCCppS88 connection details:
-
-#define S88_LOAD_PS_PIN 35       // output, Load request for slave devices
-#define S88_Reset_PIN   37       // output, Reset request for slave devices
-#define S88_DataL_PIN   31       // input,  DataL on left side
-#define S88_DataR_PIN   39       // input,  DataR on right side
-
-*/
-
-
-/*  DCC-EX connection details:
-
-            ParallelPortPin  Meaning  Arduino PORTA PORTC PORTL
-
-            2                Clock             26    33    45
-
-            3                Load              27    32    44
-
-            4                Reset             28    31    43
-
-            10               Bus0              22    37    49
-
-            11               Bus1              23    36    48
-
-            12               Bus2              24    35    47
-
-            13               Bus3              25    34    46
-
-            14               5V                5V ->
-
-*/

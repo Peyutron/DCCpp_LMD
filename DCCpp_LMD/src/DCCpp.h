@@ -3,6 +3,38 @@
 #define __DCCpp_H__
 //-------------------------------------------------------------------
 
+
+//  Area de inclusion de módulos.
+//  Para que un módulo tenga efecto hay que quitar el comentario. 
+//  NOTA: Sensores y Salidas no son compatibles con los retromodulos S88
+//  
+
+#define USE_TURNOUT           // Activa los desvíos.
+#define USE_EEPROM            // Activa la memoria EEPROM.
+// #define USE_OUTPUT         // Activa salidas. No compatible con retromodulos S88.
+// #define USE_SENSOR         // Activa sensores. No compatible con retromodulos S88.
+// #define USE_S88            // Activa compatibilidad con retromodulos S88.
+// #define DCCPP_DEBUG_MODE   // Muestra información debug en pantalla.
+#define USE_TEXTCOMMAND       // Serial nativo.
+// #define USE_SERIALWIFI        // Serial1.
+// #define USE_SERIALBLUETOOTH   // Serial2. 
+// #define USE_SERIALAUX         // Serial3.
+// #define USE_OLED              // Pantalla OLED 128x64 i2C.
+// #define USE_SOUND             // Buzzer sonidos varios.
+// #define USE_KEYBOARD          // Teclado y encoder.
+// TODO #define USE_LCD          // TODO Pantalla LCD 16x2 i2C. 
+#define DCCPP_PRINT_DCCPP
+//#define USE_ETHERNET_WIZNET_5100
+//#define USE_ETHERNET_WIZNET_5500
+//#define USE_ETHERNET_WIZNET_5200
+//#define USE_ETHERNET_ENC28J60
+
+
+
+
+
+
+
 /**	 @mainpage
 -------------------------------------------------------------------------------------------------------
 
@@ -126,9 +158,10 @@ and provided there are no other packets received in between the repeats, the DCC
 Some DCC decoders actually require receipt of sequential multiple identical one-time packets as a way of
 verifying proper transmittal before acting on the instructions contained in those packets
 
-An Arduino Motor Shield (or similar), powered by a standard 15V DC power supply and attached
-on top of the Arduino Uno or Mega, is used to transform the 0-5V DCC logic signals
-produced by the Uno's Timer interrupts into proper 0-15V bi-polar DCC signals.
+
+Un Motor Shield Arduino (o similar), alimentado por una fuente de alimentación estándar de 15 V CC y conectado
+en la parte superior del Arduino Uno o Mega, se utiliza para transformar las señales lógicas de 0-5V DCC
+producido por el timer del UNO se interrumpe en señales DCC bipolares adecuadas de 0-15V.
 
 This is accomplished on the Uno by using one small jumper wire to connect the Uno's OC1B output (pin 10)
 to the Motor Shield's DIRECTION A input (pin 12), and another small jumper wire to connect
@@ -173,11 +206,11 @@ DCC++ BASE STATION in split into multiple modules, each with its own header file
 
 -------------------------------------------------------------------------------------------------------
 
-Complement of the documentation for this library:
+Complemento de la documentación de esta biblioteca:
 
-This library is a free interpretation of the Gregg's work to adapt it to a library, and minimize
-the needs to modify the library sources to use it. The only configuration still needed in .h file is 
-to decide of the Ethernet interface model.
+Esta librería es una interpretación libre del trabajo de Gregg para adaptarlo a una librería, y minimizar
+las necesidades de modificar las fuentes de la biblioteca para usarla. The only configuration still needed 
+in .h file is to decide of the Ethernet interface model.
 It has been adapted to work also with Arduino Nano R3 and ESP32 on IDE 1.8.4 .
 Aside from text commands, a DCCpp class can also send orders through methods without any text.
 
@@ -191,33 +224,33 @@ If a track is not connected, main or programming, the signalPin should stay to d
 For H bridge connected directly to the pins, like LMD18200, signalPin and Direction motor should have the same pin number,
 or directions can be set to UNDEFINED_PIN.
 
-\par Arduino Uno + LMD18200 + MAX471, only main track
+\par Arduino Uno + LMD18200 + MAX471, solo pista principal
 
 \verbatim
 DCCpp::beginMain(UNDEFINED_PIN, DCC_SIGNAL_PIN_MAIN, 3, A0);
 \endverbatim
 
-\par Arduino Uno + 2 LMD18200 + 2 MAX471, both main and programming tracks
+\par Arduino Uno + 2 LMD18200 + 2 MAX471, pista principal y de programación
 
 \verbatim
 DCCpp::beginMain(UNDEFINED_PIN, DCC_SIGNAL_PIN_MAIN, 3, A0);
 DCCpp::beginProg(UNDEFINED_PIN, DCC_SIGNAL_PIN_PROG, 5, A1);
 \endverbatim
 
-\par Arduino Mega2560 + LMD18200 + MAX471, only main track
+\par Arduino Mega2560 + LMD18200 + MAX471, solo pista principal
 
 \verbatim
 DCCpp::beginMain(UNDEFINED_PIN, DCC_SIGNAL_PIN_MAIN, 3, A0);
 \endverbatim
 
-\par Arduino Mega2560 + 2 LMD18200 + 2 MAX471, both main and programming tracks
+\par Arduino Mega2560 + 2 LMD18200 + 2 MAX471, pistas principales y de programación
 
 \verbatim
 DCCpp::beginMain(UNDEFINED_PIN, DCC_SIGNAL_PIN_MAIN, 3, A0);
 DCCpp::beginProg(UNDEFINED_PIN, DCC_SIGNAL_PIN_PROG, 11, A1);
 \endverbatim
 
-\par Arduino Uno or Mega2560 + Arduino Motor Shield, both main and programming tracks
+\par Arduino Uno o Mega2560 + Arduino Motor Shield, pistas principales y de programación
 
 \verbatim
 DCCpp::beginMainMotorShield();
@@ -229,7 +262,7 @@ DCCpp::beginMain(MOTOR_SHIELD_DIRECTION_MOTOR_CHANNEL_PIN_A, DCC_SIGNAL_PIN_MAIN
 DCCpp::beginProg(MOTOR_SHIELD_DIRECTION_MOTOR_CHANNEL_PIN_B, DCC_SIGNAL_PIN_PROG, MOTOR_SHIELD_SIGNAL_ENABLE_PIN_PROG, MOTOR_SHIELD_CURRENT_MONITOR_PIN_PROG);
 \endverbatim
 
-\par Arduino Uno or Mega2560 + Pololu MC33926 Motor Shield, both main and programming tracks
+\par Arduino Uno o Mega2560 + Pololu MC33926 Motor Shield, pistas principales y de programación
 
 \verbatim
 DCCpp::beginMainPololu();
@@ -258,6 +291,17 @@ where NumPort is a port number.
 WARNING: if this line is not present, some errors will be raised during compilation, like "undefined reference to `eServer'" !
 
 \page revPage Revision History
+
+\LMD 23/04/2023 V2.0.4
+  - Añadido teclado 4x3 y encoder rotativo en Keyboard.h y Keyboard.cpp. Los pines
+    definidos para el teclado y encoder se encuentran en Keyboard.h
+  - Con Keyboard se añaden varias funciones en Oled.cpp. LocomotiveOled, TurnoutOled.
+  - Pantalla para uso de locomotoras (1). Necesita Keyboard
+  - Pantalla para uso de desvíos (2). Necesita Keyboard
+  - como usar el teclado en: URL) 
+  - Oled.cpp se actualiza solo cuando cambian los datos que se muestran.
+  - Imagen de inicio, opcional.
+  - Algunas partes han sido traducidas a Español ES
 
 \LMD 23/04/2023 V2.0.3
   - Retromodulos S88 añadido (por Philippe -> http://lormedy.free.fr/)
@@ -455,20 +499,20 @@ _______________
 \par 25/08/2017 V0 Initial Release
 - DCCpp est le portage du programme DCC++ en bibliothèque.
 _______________
-- DCCpp is the transcription of the DCC++ program into a library.
+- DCCpp es la transcripción del programa DCC++ en una biblioteca.
 */
 
 /** @file DCCpp.h
 Main include file of the library.*/
 
 // #define DCCPP_LIBRARY_VERSION   "VERSION DCCpp library: 1.4.2"
-#define DCCPP_LIBRARY_VERSION   "VERSION DCCpp LMD: 2.0.3"
+#define DCCPP_LIBRARY_VERSION   "DCCpp LMD: 2.0.4"
 
 #ifdef VISUALSTUDIO
 #pragma warning (disable : 4005)
 #endif
 ////////////////////////////////////////////////////////
-// Add a '//' at the beginning of the line to be in production mode.
+// Agregue un '//' al comienzo de la línea para estar en modo de producción.
 //#define DCCPP_DEBUG_MODE
 
 ///////////////////////////////////////////////////////
@@ -478,10 +522,11 @@ Main include file of the library.*/
 //#define DCCPP_DEBUG_VERBOSE_MODE
 
 ///////////////////////////////////////////////////////
-// The function DCCpp::showConfiguration()
-// is very heavy in program memory. So to avoid problems
-// you can make this function available by uncomment the next line, only when necessary.
-#define DCCPP_PRINT_DCCPP
+// La función DCCpp::showConfiguration()
+// es muy pesado en la memoria del programa. Así que para evitar problemas
+// puede hacer que esta función esté disponible quitando el comentario de la siguiente línea, 
+// solo cuando sea necesario.
+// #define DCCPP_PRINT_DCCPP
 
 #ifdef VISUALSTUDIO
 #pragma warning (default : 4005)
@@ -489,35 +534,16 @@ Main include file of the library.*/
 
 ///////////////////////////////////////////////////////
 // This define gets rid of 2 timers and uses only Timer2 to tick every 58us and change logic levels on both tracks. 
-// Zero bit is changed every 2 ticks, "one" bit changes every tick; this makes timings roughly equal to DCC specs.
-// This frees one timer and 2 pins to be used for something else, though PWM pins controlled by Timer2 
+// El bit cero se cambia cada 2 tics, el bit "uno" cambia cada tic; esto hace que los tiempos sean aproximadamente 
+// iguales a las especificaciones DCC.
+// Esto libera un temporizador y 2 pines para usar para otra cosa, though PWM pins controlled by Timer2 
 // cannot be used for hardware - PWM(they can, however, be used to output DCC signal using proposed method since 
-// it is effectively a software - PWM).Jumpers for shields are not needed anymore. This is done at the RAM cost of 
-// 2 bytes per RegisterList and 2 extra pointers in DCCppConfig (pointers might not be needed, they are used for 
+// it is effectively a software - PWM). Ya no se necesitan puentes para los shields.. Esto esto tiene un coste de RAM 
+// de 2 bytes por RegisterList y 2 punteros adicionales en DCCppConfig (pointers might not be needed, they are used for 
 // direct IO port manipulation to bypass arduino's digitalWrite).
 //#define USE_ONLY1_INTERRUPT
 
-//  Inclusion area
-//
 
-#define USE_TURNOUT
-#define USE_EEPROM
-#define USE_OUTPUT
-#define USE_SENSOR       // No compatible con S88
-//#define USE_S88             // Retromodulos S88
-#define USE_TEXTCOMMAND
-// #define DCCPP_DEBUG_MODE  // Muestra Información en pantalla
-//#define USE_SERIALWIFI      // Serial1
-//#define USE_SERIALBLUETOOTH // Serial2
-//#define USE_SERIALAUX       // Serial3 
-#define USE_OLED          // Pantalla OLED 128x64 i2C 
-// TODO #define USE_LCD           // Pantalla LCD 16x2 i2C 
-#define USE_SOUND          // Buzzer sonidos varios
-#define DCCPP_PRINT_DCCPP
-//#define USE_ETHERNET_WIZNET_5100
-//#define USE_ETHERNET_WIZNET_5500
-//#define USE_ETHERNET_WIZNET_5200
-//#define USE_ETHERNET_ENC28J60
 
 #ifdef DOXYGEN_SPECIFIC
     // DO NOT CHANGE THESE LINES IN THIS BLOCK 'DOXYGEN_SPECIFIC' : Only here for documentation !
@@ -625,6 +651,9 @@ Main include file of the library.*/
 #endif
 #ifdef USE_SOUND
 #include "Sound.h"
+#endif
+#ifdef USE_KEYBOARD
+#include "Keyboard.h"
 #endif
 
 #include "DCCpp.hpp"

@@ -6,8 +6,6 @@
 
 #include "DCCpp.h"
 
-// #include "PacketRegister.h"
-// #include "CurrentMonitor.h"
 
 #define WIFI Serial1
 #define WF_MAX_COMMAND_LENGTH         30

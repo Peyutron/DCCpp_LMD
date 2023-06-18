@@ -32,15 +32,15 @@ void EEStore::init(){
   
   //eeStore=(EEStore *)calloc(1,sizeof(EEStore));
 
-  //EEPROM.get(0,eeStore->data);                                       // get eeStore data 
+  //EEPROM.get(0,eeStore->data);                                       // obtiene los datos de eeStore 
 #ifdef VISUALSTUDIO
   EEPROM.get(0, (void *)&data, sizeof(EEStoreData));
 #else
   EEPROM.get(0, data);
 #endif
   
-  if(strncmp(data.id,EESTORE_ID,sizeof(EESTORE_ID))!=0){    // check to see that eeStore contains valid DCC++ ID
-    sprintf(data.id,EESTORE_ID);                           // if not, create blank eeStore structure (no turnouts, no sensors) and save it back to EEPROM
+  if(strncmp(data.id,EESTORE_ID,sizeof(EESTORE_ID))!=0){    // verifica que eeStore contenga una ID de DCC++ válida
+    sprintf(data.id,EESTORE_ID);                           // si no, crea una estructura eeStore en blanco (sin desvíos, sin sensores) y la guarda nuevamente en EEPROM
 #ifdef USE_TURNOUT
 	data.nTurnouts=0;
 #endif
@@ -60,25 +60,25 @@ void EEStore::init(){
 #endif
   }
   
-  reset();            // set memory pointer to first free EEPROM space
+  reset();            // establece el puntero de memoria en el primer espacio libre de EEPROM
 #ifdef USE_TURNOUT
-  Turnout::load();    // load turnout definitions
+  Turnout::load();    // carga las definiciones de los desvíos
 #endif
 #ifdef USE_SENSOR
-  Sensor::load();     // load sensor definitions
+  Sensor::load();     // carga las definiciones de los sensores
 #endif
 #ifdef USE_OUTPUT
-  Output::load();     // load output definitions
+  Output::load();     // carga las definiciones de las salidas 
 #endif
 #ifdef USE_S88
-  S88::load();        // load S88 definitions
+  S88::load();        // carga las definiciones de S88 
 #endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void EEStore::clear(){
-  sprintf(data.id,EESTORE_ID);  // create blank eeStore structure (no turnouts, no sensors) and save it back to EEPROM
+  sprintf(data.id,EESTORE_ID);  // crea una estructura eeStore en blanco (sin desvíos, sin sensores) y la guarda nuevamente en EEPROM
 #ifdef USE_TURNOUT
   data.nTurnouts=0;
 #endif
@@ -140,7 +140,7 @@ bool EEStore::needsRefreshing() {
 		return true;
 #endif
 #ifdef USE_OUTPUT
-	if (data.nOutputs!= Output::count())
+	if (data.nOutputs != Output::count())
 		return true;
 #endif
 #ifdef USE_S88

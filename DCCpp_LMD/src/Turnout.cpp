@@ -234,10 +234,11 @@ bool Turnout::parse(char *c){
 			#ifdef USE_SOUND
 				Sound::ActionError();
 			#endif
+
 		}
 		return true;
 
-    case 3:                     // argument is string with id number of turnout followed by an address and subAddress
+    case 3:  // argument is string with id number of turnout followed by an address and subAddress
     	if(m >= 4) return true;
     	else {
     	create(n,s,m);
@@ -272,7 +273,8 @@ Turnout *Turnout::create(int id, int add, int subAdd) {
 		#endif
 		#ifdef USE_OLED 
 			Oled::printSaved(false);
-		#endif
+			Oled::Monitor("Create error");
+			#endif
 	
 		return(tt);
 	}
