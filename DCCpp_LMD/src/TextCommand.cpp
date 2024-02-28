@@ -532,7 +532,7 @@ switch(com[0]){
       CommManager::printf("<p1>");
 	
 
-
+/* 02/28/2024
 	 for(int i=1;i<=MAX_MAIN_REGISTERS;i++){
 		if(DCCpp::mainRegs.speedTable[i]==0)
 			continue;
@@ -544,7 +544,7 @@ switch(com[0]){
 
 		}          
 	}
-
+*/
 	#ifdef USE_SERIALWIFI
 		serialInUse[0] = (String)WIFI;
 	#endif
@@ -576,13 +576,13 @@ switch(com[0]){
 
 #ifdef DCCPP_PRINT_DCCPP
 #ifdef USE_TURNOUT
-	  Turnout::show();
+	  // Turnout::show();
 #endif
 #ifdef USE_OUTPUT
-	  Output::show();
+	  // Output::show();
 #endif
 #ifdef USE_SENSOR
-	  Sensor::show();
+	  // Sensor::show();
 #endif
 #endif
 	return true;
