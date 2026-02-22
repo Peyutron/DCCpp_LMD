@@ -121,19 +121,25 @@ switch(com[0]){
 
     //return true; // NUEVA LINEA 
 
-    case 'Y':       // <Y Nb_S88_Modules DataFormat> para inicialización o <Y> para feedback de ocupación
-/*
- *   <Y Nb_S88_Bytes DataFormat>:            sets Nb_S88_Modules read with output DataFormat
- *   <Y>                                     proporciona feedback de ocupación 
- *
- *   Nb_S88_Bytes: the byte number (0-64) to read
- *   DataFormat: 0 (Binary) 1 (Hexadecimal)
- *
- *   returns: <o status>, then <y S88_Bytes> or <q/Q n>
- *
- *   *** CONSULTE S88.CPP PARA OBTENER INFORMACIÓN COMPLETA SOBRE LAS DIFERENTES VARIACIONES DEL COMANDO "Y"
- *   used to define S88 retrosignalisation definitions
- */
+    case 'Y': // <Y Nb_S88_Modules DataFormat> para inicialización o <Y> para feedback de ocupación
+		/**	\addtogroup commandsGroup
+			COMANDO PARA SISTEMA DE OCUPACIÓN S88
+
+		<b>
+    	\verbatim 
+  		<Y Nb_S88_Bytes DataFormat>: sets Nb_S88_Modules read with output DataFormat
+ 		<Y>                          proporciona feedback de ocupación 
+		\endverbatim
+		</b>
+    	
+    	*** CONSULTE S88.CPP PARA OBTENER INFORMACIÓN COMPLETA SOBRE LAS DIFERENTES VARIACIONES DEL COMANDO "Y"
+    	used to define S88 retrosignalisation definitions
+º
+    	- <b>Nb_S88_Bytes</b>: the byte number (0-64) to read
+    	- <b>DataFormat</b>: 0 (Binary) 1 (Hexadecimal)
+ 
+    	returns: <b>\<o status\>, then \<y S88_Bytes\> or \<q/Q n\></b>
+    	*/
       // DCCPP_INTERFACE.print("\n<y 00000000>"); or DCCPP_INTERFACE.print("\n<y 00>");
       S88::parse(com +1); // NUEVA LINEA 
       return true;
@@ -340,7 +346,6 @@ switch(com[0]){
 	  DCCpp::mainRegs.writeCVByteMain(com+1);
 		return true;
 
-
 	case 'b':      
 		/**	\addtogroup commandsGroup
 		WRITE CONFIGURATION VARIABLE BIT TO ENGINE DECODER ON MAIN OPERATIONS TRACK
@@ -524,27 +529,47 @@ switch(com[0]){
 		CommManager::printf("<a%d>", int(DCCpp::getCurrentMain()));
 		return true;
 
-	case 's':
+#ifdef USE_SERIALWIFI
+	case 'I':
+		/**	\addtogroup commandsGroup
+		GET IP FROM NONOS ESP01
+		-----------------------------------------
 
-	if (digitalRead(DCCppConfig::SignalEnablePinProg) == LOW) // could check either PROG or MAIN
-      CommManager::printf("<p0>");
-    else
-      CommManager::printf("<p1>");
+		<b>
+		\verbatim
+		<I>
+		\endverbatim
+		</b>
+
+		Send command AT+CIFSR\r\n 
+    
+		returns: <b>IP:xxx.xxx.xxx.xxx</b>
+		*/   
+
+		Wifi::getWifiIP();
+		return true;
+#endif
+
+
+	case 's':
+		if (digitalRead(DCCppConfig::SignalEnablePinProg) == LOW) // could check either PROG or MAIN
+      		CommManager::printf("<p0>");
+    	else CommManager::printf("<p1>");
 	
 
-/* 02/28/2024
-	 for(int i=1;i<=MAX_MAIN_REGISTERS;i++){
-		if(DCCpp::mainRegs.speedTable[i]==0)
-			continue;
-		if(DCCpp::mainRegs.speedTable[i]>0){
-			CommManager::printf("<T%d %d 1>", i, DCCpp::mainRegs.speedTable[i]);
-
-		} else {
-			CommManager::printf("<T%d %d 0>", i, - DCCpp::mainRegs.speedTable[i]);
-
-		}          
-	}
-*/
+	 	for(int i=1;i<=MAX_MAIN_REGISTERS;i++)
+	 	{
+			if(DCCpp::mainRegs.speedTable[i]==0)
+				continue;
+			if(DCCpp::mainRegs.speedTable[i]>0)
+			{
+				CommManager::printf("<T%d %d 1>", i, DCCpp::mainRegs.speedTable[i]);
+			} 
+			else 
+			{
+				CommManager::printf("<T%d %d 0>", i, - DCCpp::mainRegs.speedTable[i]);
+			} 
+		}
 	#ifdef USE_SERIALWIFI
 		serialInUse[0] = (String)WIFI;
 	#endif
@@ -554,11 +579,9 @@ switch(com[0]){
 	#ifdef USE_SERIALAUX
 		serialInUse[2] = (String)SERIALAUX;
 	#endif
-		
-	
-	CommManager::printf("<iDCCpp-LMD LIBRARY BASE STATION FOR ARDUINO V-%s", DCCPP_LIBRARY_VERSION );
-	CommManager::printf("<N Wifi: %s Bluetooth: %s Aux: %s>", serialInUse[0], serialInUse[1], serialInUse[2]);
-	
+
+		CommManager::printf("<iDCCpp-LMD LIBRARY BASE STATION FOR ARDUINO V-%s", DCCPP_LIBRARY_VERSION );
+		CommManager::printf("<N Wifi: %s Bluetooth: %s Aux: %s>", serialInUse[0], serialInUse[1], serialInUse[2]);
 	
 	#ifdef USE_SERIALWIFI
 		WIFI.println(info_vers);
@@ -572,20 +595,18 @@ switch(com[0]){
 		SERIALAUX.println(info_vers);
 		SERIALAUX.println(info_serial);
 	#endif
-
-
-#ifdef DCCPP_PRINT_DCCPP
-#ifdef USE_TURNOUT
-	  // Turnout::show();
-#endif
-#ifdef USE_OUTPUT
-	  // Output::show();
-#endif
-#ifdef USE_SENSOR
-	  // Sensor::show();
-#endif
-#endif
-	return true;
+	#ifdef DCCPP_PRINT_DCCPP
+	#ifdef USE_TURNOUT
+	  	Turnout::show();
+	#endif
+	#ifdef USE_OUTPUT
+	  	Output::show();
+	#endif
+	#ifdef USE_SENSOR
+	  	Sensor::show();
+	#endif
+	#endif  //end USE_SERIALAUX
+		return true;
 
 
 #ifdef USE_EEPROM
@@ -782,15 +803,6 @@ case 'D':
 	 }
 	  DCCPP_INTERFACE.println("");
 		return true;
-	#ifdef USE_SERIALWIFI	
-		case 'I':
-		#ifdef USE_OLED
-			Oled::printWifiIp(com + 1);
-		#endif
-			return true;
-	#endif
-
-	
 	case 'F':     
 				
 

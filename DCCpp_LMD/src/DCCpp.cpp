@@ -99,7 +99,7 @@ void DCCpp::loop()
 	TextCommand::process();              // check for, and process, and new serial commands
 #endif
 #ifdef USE_SERIALWIFI
-	Wifi::wifiprocess();
+	Wifi::wifiProcess();
 #endif 	
 #ifdef USE_SERIALBLUETOOTH
 	Bluetooth::btprocess();
@@ -133,8 +133,8 @@ void DCCpp::loop()
 #endif
 #ifdef USE_OLED
     if (!Oled::Menu_On_Off)Oled::initScreen();
-	// Oled::initScreen();
-	 //Oled::updateOled();
+		//Oled::initScreen();
+	 	//Oled::updateOled();
 #endif
 #ifdef USE_KEYBOARD
 	if(!Oled::Menu_On_Off) Keyboard::KeyLoop();
@@ -248,6 +248,9 @@ void DCCpp::begin()
 #endif
 #ifdef USE_OLED
 	Oled::init();
+#endif
+#ifdef USE_SERIALWIFI
+	Wifi::InitWifiModule();
 #endif
 #ifdef USE_KEYBOARD
 	Keyboard::init();

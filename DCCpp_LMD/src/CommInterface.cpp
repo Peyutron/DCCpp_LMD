@@ -39,7 +39,7 @@ void CommManager::printf(const char *fmt, ...) {
 		#endif
 	#endif
 	#ifdef USE_SERIALWIFI
-		WIFI.print(buf);
+		Wifi::broadcast(buf);
 	#endif
 	#ifdef USE_SERIALBLUETOOTH
 		BLUETOOTH.print(buf);

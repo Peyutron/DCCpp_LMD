@@ -15,7 +15,18 @@ Part of DCC++ BASE STATION for the Arduino
 /**	Use it as an argument to specify an unused pin. */
 #define UNDEFINED_PIN	255
 
-/////////////////////////////////////////////////////////////////////////////////////
+/* Configuración para conexión wifi "SSID","Password NO FUNCIONA*/
+
+/** Nombre de la red WiFi */
+#define WIFI_SSID "YOUR_SSID" 
+
+/** Contraseña red WiFi */
+#define WIFI_PASSWORD "YOUR_WIFI_PASS"	//
+
+/** Max clients connections */
+#define MAX_CLIENTES 4
+
+//////////////////////////////////////
 //
 // DEFINE NUMBER OF MAIN TRACK REGISTER
 

@@ -6,8 +6,8 @@
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
-// ACTIVA ANIMACIONES OLED
- #define OLED_ANIMATION
+// ACTIVA ANIMACION OLED
+#define OLED_ANIMATION
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
@@ -18,7 +18,7 @@
 //
 // DEFINE LA DIRECCION DE LA PANTALLA OLED SSD1306
 #define DCCPP_VERSION1 "DCCpp LMD "
-#define DCCPP_VERSION2 "2.0.4"
+#define DCCPP_VERSION2 "2.1.0"
 #define OLED_NAME "SSD1306"
 #define COMM_NAME "SERIAL ONLY"
 #define ACTUALIZA_INFO 750  // Actualiza cada 750ms, con menos deja de funcionar correctamente S88
@@ -60,24 +60,35 @@ class Oled {
     #endif
     static void GetSensor(uint8_t, uint8_t);
     static void GetOutput(uint8_t, uint8_t, uint8_t);  
+    
     static void Monitor(char *m);
-
+    
+    #ifdef USE_SERIALWIFI
     // Muestra IP en pantalla de inicio
     static void printWifiIp(String);
+    #endif
+    
     // Muestra en pantalla la cantidad de Sram disponible
     static void printSram (uint16_t);
+    
     // Muestra en numero de listados de un desvio / Sensor / Salida
     static void printList(int, int);
+    
     // Imprime en la pantalla que se ha definido un desvío
     static void printDefined(int, int, int, int);
+    
     // Imprime en la pantalla que se ha Guardado un desvío /Identificador/id/direccion/subdireccion
     static void printSaved(bool);                 
+    
     // Imprime en pantalla que se ha eliminado un desvío /Identificador
     static void printDelete(int, bool, int); 
+    
     // Aviso borrado de memoria
     static void printDeleteMemory();              
+    
     //ERROR id no disponible
     static void printErrorList(int);       
+    
     static void MenuKeyboard();
     // Actualiza la patalla desde loop();
     // static void updateOled();          
@@ -85,38 +96,48 @@ class Oled {
     // static void printErrorOptionUndefined(int);   
     // Cv - 1-1024  , resultado
     // static void printReadCv(int, int); 
+
+private:
     
-
-    
-
-
-   private:
     // Imprime los datos seriales en la parte superior izquierda de la pantalla.
     static void printSerial();
+    
     // Selecciona los diferentes dispositivos de comunicación
     static String SwInput();
+    
     #ifdef USE_KEYBOARD
     static void ClearNumbers();
+    
     // Keyboard: '1': Pantalla para control de locomotoras.
     static void LocomotiveOled();
+    
     // Keyboard: '2': Pantalla para control de desvíos.
     static void TurnoutOled();
+    
     // Keyboard: '3': Pantalla contol accesorios.
     static void AccesoryOled();     
+    
     // Keyboard: '0': Muestra una lista con las opciones disponibles.
     static void MenuLista();
+    
     // Keyboard: '#': Sale de la pantalla seleccionada.
     static void ExitPage();
+    
     // Envia el comando a TextCommand::parse();         
     static void SendCommand(String);
+    
     // Crea un comando para maquina.
     static String CreateLocoCommand();
+    
     // Crea un comando para una función de máquina.
     static String CreateFunctionCommand(uint8_t);
+    
     // Crea un comando para un desvío.
     static String CreateTurnoutCommand();
+    
     // Crea un comando para un accesorio.
     static String CreateAccesoryCommand();
+    
     // Funcion para un número entero desde un array de 3 posiciones
     static uint8_t GetNumber(char nList[]);
     #endif

@@ -11,8 +11,8 @@
 
 #define USE_TURNOUT           // Activa los desvíos.
 #define USE_EEPROM            // Activa la memoria EEPROM.
-// #define USE_OUTPUT         // Activa salidas. No compatible con retromodulos S88.
-// #define USE_SENSOR         // Activa sensores. No compatible con retromodulos S88.
+#define USE_OUTPUT         // Activa salidas. No compatible con retromodulos S88.
+#define USE_SENSOR         // Activa sensores. No compatible con retromodulos S88.
 // #define USE_S88            // Activa compatibilidad con retromodulos S88.
 // #define DCCPP_DEBUG_MODE   // Muestra información debug en pantalla.
 #define USE_TEXTCOMMAND       // Serial nativo.
@@ -209,20 +209,29 @@ DCC++ BASE STATION in split into multiple modules, each with its own header file
 Complemento de la documentación de esta biblioteca:
 
 Esta librería es una interpretación libre del trabajo de Gregg para adaptarlo a una librería, y minimizar
-las necesidades de modificar las fuentes de la biblioteca para usarla. The only configuration still needed 
-in .h file is to decide of the Ethernet interface model.
-It has been adapted to work also with Arduino Nano R3 and ESP32 on IDE 1.8.4 .
-Aside from text commands, a DCCpp class can also send orders through methods without any text.
+las necesidades de modificar las fuentes de la biblioteca para usarla. La única configuración que aún se 
+necesita en el archivo .h es decidir el modelo de interfaz Ethernet..
+Se ha adaptado para funcionar también con Arduino Nano R3 y ESP32 en IDE 1.8.4.
+Además de los comandos de texto, una clase DCCpp también puede enviar órdenes a través de métodos 
+sin ningún texto.
 
 \page commonPage Configuration Lines
 
-This is the 'begin' lines for some common configurations. Note that for LMD18200, the two final arguments must be adapted to your need...
-The wiring for these configurations is visible here : http://www.locoduino.org/spip.php?article187 . The text is in French, but schema can be understood !
+Estas son las líneas 'begin' para algunas configuraciones comunes. Tenga en cuenta que para LMD18200, 
+los dos argumentos finales deben adaptarse a sus necesidades. 
+El cableado para estas configuraciones se puede ver aquí. : http://www.locoduino.org/spip.php?article187 . 
+El texto está en francés, ¡pero el esquema se puede entender!
 
-For Arduino or Pololu shields, signalPinMain must be connected to Direction motor A, and signalPinProg to Direction motor B
-If a track is not connected, main or programming, the signalPin should stay to default at 255 (UNDEFINED_PIN).
-For H bridge connected directly to the pins, like LMD18200, signalPin and Direction motor should have the same pin number,
-or directions can be set to UNDEFINED_PIN.
+- Para Arduino Motor Shield puede revisar la información del cableado 
+  en http:lamaquetade.infotronikblog.com\dccstations/dccpp_lmd/dccpp_lmd_configuracion.html
+  En el apartado: SELECT MOTOR SHIELD
+
+- Para los shields Arduino o Pololu, signalPinMain debe estar conectado al motor de dirección A 
+  y signalPinProg al motor de dirección B.
+- Si una pista no está conectada, ya sea principal o de programación, el pin de señal debe 
+  permanecer en el valor predeterminado 255 (UNDEFINED_PIN).
+- Para el puente H conectado directamente a los pines, como LMD18200, signalPin y Direction motor deben 
+  tener el mismo número de pin, o las direcciones se pueden configurar como UNDEFINED_PIN.
 
 \par Arduino Uno + LMD18200 + MAX471, solo pista principal
 
@@ -276,23 +285,27 @@ DCCpp::beginProg(POLOLU_DIRECTION_MOTOR_CHANNEL_PIN_B, DCC_SIGNAL_PIN_PROG, POLO
 
 \par Ethernet Usage
 
-To activate an Ethernet connection, one of the four ethernet defines must be activated :
+Para activar una conexión Ethernet, se debe activar una de las cuatro definiciones de Ethernet:
 - USE_ETHERNET_WIZNET_5100 for Wiznet 5100 chip, present on the Arduino Ethernet Shield V1 and other shields.
 - USE_ETHERNET_WIZNET_5500 for Wiznet 5500 chip, present on the Arduino Ethernet Shield V2 and other shields.
 - USE_ETHERNET_WIZNET_5200 for Wiznet 5200 chip, present on the Arduino Ethernet Shield from Seeed and other shields.
 - USE_ETHERNET_ENC28J60  for cheap ENC28J60 chip, present on a lot of chinese Ethernet shields.
 
-If one of these defines is activated, a line must be present somewhere in your code, defining an Ethernet server :
+Si se activa una de estas definiciones, debe haber una línea presente en algún lugar de su código que defina un servidor Ethernet:
 \verbatim
-EthernetServer DCCPP_INTERFACE(NumPort);                  // Create and instance of an EthernetServer
+EthernetServer DCCPP_INTERFACE(NumPort);                  // Crear una instancia de un servidor Ethernet
 \endverbatim
-where NumPort is a port number. 
+donde NumPort es el número de puerto. 
 
-WARNING: if this line is not present, some errors will be raised during compilation, like "undefined reference to `eServer'" !
+ADVERTENCIA: si esta línea no está presente, se generarán algunos errores durante la compilación, como "referencia indefinida a `eServer'".
 
 \page revPage Revision History
 
-\LMD 23/04/2023 V2.0.4
+\par 22/02/2026 V2.1.0
+- Conexión Wifi para 4 clientes SerialWifi.h y SerialWifi.cpp
+_______________
+
+\par 23/04/2023 V2.0.4
   - Añadido teclado 4x3 y encoder rotativo en Keyboard.h y Keyboard.cpp. Los pines
     definidos para el teclado y encoder se encuentran en Keyboard.h
   - Con Keyboard se añaden varias funciones en Oled.cpp. LocomotiveOled, TurnoutOled.
@@ -302,18 +315,20 @@ WARNING: if this line is not present, some errors will be raised during compilat
   - Oled.cpp se actualiza solo cuando cambian los datos que se muestran.
   - Imagen de inicio, opcional.
   - Algunas partes han sido traducidas a Español ES
+  __________________________
 
-\LMD 23/04/2023 V2.0.3
+\par 23/04/2023 V2.0.3
   - Retromodulos S88 añadido (por Philippe -> http://lormedy.free.fr/)
   - Arreglos sonido
   - Comando <#> que muestra el número de locomotoras que puede administrar la central
   - Comando <I> (solo WiFi) Muestra la IP del dispositivo Wifi WebSocket (https://github.com/Peyutron/DCC-ESP8266-Websocket-Server)
+_______________
 
+\par 05/04/2023 V2.0.2
+ - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente
+_______________
 
-\LMD 05/04/2023 V2.0.2
-  - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente
-
-\LMD 01/04/2023 V2.0.1
+\par 01/04/2023 V2.0.1
 - Datos seriales unificados en CommInterface.cpp
 - Implementación del puerto Serial1 como SerialWifi (SerialWifi.h) con WebSocket "ws://"
 - Implementación del puerto Serial2 como SerialBluetooth (SerialBluetooth.h)
@@ -322,7 +337,7 @@ WARNING: if this line is not present, some errors will be raised during compilat
   *- SSD1603 128x64
 - Monitor Serial en pantalla
 - Monitor de consumo 
-
+_______________
 
 \par 08/11/2020 V1.4.2
 - Adaptation de la mesure de courant à l'ESP32.
@@ -506,7 +521,7 @@ _______________
 Main include file of the library.*/
 
 // #define DCCPP_LIBRARY_VERSION   "VERSION DCCpp library: 1.4.2"
-#define DCCPP_LIBRARY_VERSION   "DCCpp LMD: 2.0.4"
+#define DCCPP_LIBRARY_VERSION   "DCCpp LMD: 2.1.0"
 
 #ifdef VISUALSTUDIO
 #pragma warning (disable : 4005)
