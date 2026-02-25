@@ -49,6 +49,10 @@ Nos podemos ahorrar el soldar componentes ya que para el módulo <strong>ESP-01<
 Con el pequeño parlante podremos percibir de una manera mas intuitiva si algo va bien o mal en la cental, cuenta con sonidos para <strong>encendido/apagado</strong> y <strong>confirmación o fallo</strong>
 Estos se pueden modificar en el archivo <em>Sound.cpp</em>
 
+TODO: Sensores RF433 nativo
+
+### Registro de versiones:
+
 *-\22/02/2026 V2.1.0
 - Conexión Wifi con ESP01 y NonOs para 4 clientes SerialWifi.h y SerialWifi.cpp
 _______________
