@@ -1,17 +1,18 @@
-/*
- * project: <DCCpp LMD>
- * author: <Carlos M.C>
- * description: <DCCpp Animation>
- * Placa Arduino MEGA
- * Shield Ardumoto L298
- *
- *
- * Se pueden iniciar los desvíos creando objetos "Turnout":
- * Turnout T1; 
- * En setup():
- * T1.begin(ID, DIRECCIÓN, SUBDIRECCIÓN);
- *
-*/
+/**
+  * project: <DCCpp LMD>
+  * author: <Carlos M.C>
+  * Name: <DCCpp Animation>
+  * Description: Example for DCCpp LMD library showing how to create programmable sequences of animations.
+  *              Each step can control either a turnout or a locomotive, with custom state and timing.
+  * Placa Arduino MEGA
+  * Shield Ardumoto L298
+  *
+  *
+  * Turnouts can be initiated by creating "Turnout" objets:
+  * Turnout T1; 
+  * setup():
+  * T1.begin(ID, DIRECCIÓN, SUBDIRECCIÓN);
+  **/
 
 #include "DCCpp.h"
 #include "Animation_DCCpp.h"
@@ -23,43 +24,51 @@
 // Indice
 uint8_t nextStep = 0;
 
-// Initialize the accessories
-Turnout ACC1, ACC3, ACC4, ACC5, ACC6, ACC7, ACC9;
+// Initialize the turnouts
+Turnout turnout;
+
+TextCommand textCommand;
 
 // Number of animations
-#define NUM_ANIMAT 7
+#define NUM_ANIMAT 9
 
 /** Initialize the animations:
   * Turnour: Accessory or turnout. 
   * status: Estado true/false.
   * tDuration: Duration time in seconds. 
   * tFinish: Always 0.
-  * type: #0-Accessory #1-Traffic light #2-Turnouts
+  * type: #0-Accessory #1-Traffic light #2-Turnouts #3-Command
   * comment: Comment about the animation (serial monitor only) can be left blank " ".
 */
 Animations animation[NUM_ANIMAT] =
 {
 // Turnour | Status | St1 | Et2 | Type | Comment  
-  {ACC1, false,  30, 0, LIGHT, "Soldador"},       // Iluminación exteriores 
-  {ACC3, false,  60, 0, LIGHT, "Ilum. calles"},   // Iluminación casas
-  {ACC4, false,  65, 0, LIGHT, "Ilum. casas"},    // Iluminación taller
-  {ACC5, false,  60, 0, EFFECT, "Paso a nivel"},  // Iluminación televisor
-  {ACC6, false,  59, 0, LIGHT, "Ilun. talleres"}, // Iluminación barriada
-  {ACC7, false,  35, 0, EFFECT, "Tv Talleres"},   // Iluminación soldador
-  {ACC9, false,  50, 0, EFFECT, "Barriada"}       // Iluminación soldador
+  {turnout, false,  15, 0, LIGHT, "Soldador"},       // Iluminación exteriores 
+  {turnout, false,  30, 0, LIGHT, "Ilum. calles"},   // Iluminación casas
+  {turnout, false,  32, 0, LIGHT, "Ilum. casas"},    // Iluminación taller
+  {turnout, false,  35, 0, EFFECT, "Paso a nivel"},  // Iluminación televisor
+  {turnout, false,  29, 0, LIGHT, "Ilun. talleres"}, // Iluminación talleres
+  {turnout, false,  18, 0, EFFECT, "Tv Talleres"},   // Iluminación soldador
+  {turnout, false,  50, 0, EFFECT, "Barriada"},       // Iluminación Barriada
+  {turnout, false, 4, 0, COMMAND, "Luces 307", "t1 4 0 0"}, // Locomotora DCC 4 atrás
+  {turnout, false, 5, 0, COMMAND, "Luces 307", "f4 144"}    // Enciende luces locomotora DCC 4
+
 };
 
 // Initialize the turnouts
 Turnout T17, T18, T19, T20, T21, T22, T23, T24, T25, T26, T27, T28; 
+
+
 
 void setup()
 {
   // Inicia la comunicación serial USB 
   Serial.begin(115200); 
 
- 
+  // Inicia la librería DCCpp LMD
   DCCpp::begin();
   delay(500);
+
   // Inicia la vía principal motor Shield Ardumoto
   DCCpp::beginMainMotorShield();
   
@@ -69,6 +78,7 @@ void setup()
   // Inicia todos los desvíos y accesorios
   statTurnoutsAndAccessories();
   
+  // Enciende la central DCCpp
   DCCpp::powerOn();
 
 }
@@ -89,9 +99,16 @@ void turnoutActivated(uint8_t index)
 
 
 
-  for (uint8_t resend = 0; resend < 2; resend++)
+  for (uint8_t resend = 0; resend < 3; resend++)
   {
-    animation[index].turnout.activate(animation[index].state);
+    if (animation[index].type == COMMAND)
+    {
+      TextCommand::parse(animation[index].command);
+    }
+    else
+    {
+      animation[index].turnout.activate(animation[index].state);
+    }
   }
   
   // Serial monitor information
