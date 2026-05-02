@@ -12,10 +12,15 @@
 
 void setup()
 {
+ 
  Serial.begin(115200); // Inicia la comunicación serial USB 
+ 
+ // LMD V2.1.1
+ // Los Serialx.begin() se inician el SerialWifi.cpp, SerialBluetooth.cpp y SerialAux.cpp 
  // Serial1.begin(115200); // Inicia la comunicación serial para WiFi ( SOLO MEGA) 
- Serial2.begin(115200); // Inicia la comunicación serial para Bluetooth ( SOLO MEGA) 
+ // Serial2.begin(115200); // Inicia la comunicación serial para Bluetooth ( SOLO MEGA) 
  // Serial3.begin(115200); // Inicia la comunicación serial para SerialAux ( SOLO MEGA) 
+ 
  DCCpp::begin(); 
  DCCpp::beginMainMotorShield(); // Inicia la vía principal motor Shield Ardumoto 
  DCCpp::beginProgMotorShield(); // Inicia la vía de programación en motor Shield Ardumoto
