@@ -12,8 +12,8 @@
   *  - Serial2 -> USE_SERIALBLUETOOTH para Comunicación Bluetooth.
   *  - Serial3 -> USE_SERIALAUX para Comunicación Auxiliar.
   * 
-  * Placa Arduino MEGA
-  * Shield Ardumoto L298
+  * Board: Arduino MEGA 2560
+  * Shield: Ardumoto L298
   */
 
 #include "DCCpp.h"
