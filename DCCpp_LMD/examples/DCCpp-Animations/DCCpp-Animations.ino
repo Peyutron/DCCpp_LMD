@@ -5,8 +5,8 @@
   * GitHub: https://github.com/Peyutron/DCCpp_LMD
   * Description: Example for DCCpp LMD library showing how to create programmable sequences of animations.
   *              Each step can control either a turnout or a locomotive, with custom state and timing.
-  * Placa Arduino MEGA
-  * Shield Ardumoto L298
+  * Board: Arduino MEGA 2560
+  * Shield: Ardumoto L298
   *
   * Turnouts can be initiated by creating "Turnout" objets:
   * Turnout T1; 
