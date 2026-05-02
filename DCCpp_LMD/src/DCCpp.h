@@ -1,7 +1,6 @@
-//-------------------------------------------------------------------
-#ifndef __DCCpp_H__
+//-------------------
 #define __DCCpp_H__
-//-------------------------------------------------------------------
+//-------------------
 
 
 //  Area de inclusion de módulos.
@@ -11,15 +10,16 @@
 
 #define USE_TURNOUT           // Activa los desvíos.
 #define USE_EEPROM            // Activa la memoria EEPROM.
-#define USE_OUTPUT         // Activa salidas. No compatible con retromodulos S88.
+#define USE_OUTPUT            // Activa salidas. No compatible con retromodulos S88.
 #define USE_SENSOR         // Activa sensores. No compatible con retromodulos S88.
-// #define USE_S88            // Activa compatibilidad con retromodulos S88.
+//#define USE_S88               // Activa compatibilidad con retromodulos S88.
+// #define USE_RF_SENSOR      // Acticva la lectura de sensores RF
 // #define DCCPP_DEBUG_MODE   // Muestra información debug en pantalla.
 #define USE_TEXTCOMMAND       // Serial nativo.
 // #define USE_SERIALWIFI        // Serial1.
-// #define USE_SERIALBLUETOOTH   // Serial2. 
-// #define USE_SERIALAUX         // Serial3.
-// #define USE_OLED              // Pantalla OLED 128x64 i2C.
+// #define USE_SERIALBLUETOOTH // Serial2. 
+// #define USE_SERIALAUX      // Serial3.
+#define USE_OLED              // Pantalla OLED 128x64 i2C.
 // #define USE_SOUND             // Buzzer sonidos varios.
 // #define USE_KEYBOARD          // Teclado y encoder.
 // TODO #define USE_LCD          // TODO Pantalla LCD 16x2 i2C. 
@@ -28,10 +28,6 @@
 //#define USE_ETHERNET_WIZNET_5500
 //#define USE_ETHERNET_WIZNET_5200
 //#define USE_ETHERNET_ENC28J60
-
-
-
-
 
 
 
@@ -293,7 +289,7 @@ Para activar una conexión Ethernet, se debe activar una de las cuatro definicio
 
 Si se activa una de estas definiciones, debe haber una línea presente en algún lugar de su código que defina un servidor Ethernet:
 \verbatim
-EthernetServer DCCPP_INTERFACE(NumPort);                  // Crear una instancia de un servidor Ethernet
+EthernetServer DCCPP_INTERFACE(NumPort);  // Crear una instancia de un servidor Ethernet
 \endverbatim
 donde NumPort es el número de puerto. 
 
@@ -301,8 +297,24 @@ ADVERTENCIA: si esta línea no está presente, se generarán algunos errores dur
 
 \page revPage Revision History
 
+
+\par 19/03/2026 V2.1.1
+  - Los Serialx.begin() se inician el SerialWifi.cpp, SerialBluetooth.cpp y SerialAux.cpp  
+  - Oled:
+    - Rediseño Oled pantalla de encendido
+    - Pantalla Overload como protección contra cortocircuito se restablece con <0> o <1> 
+    - Oled muestra el comando recibido
+  - CommInterface:
+    - Funciones getLastOutput(); y clearLastOutput();
+  - Wifi:
+    - Añadido IP personalizada.
+    - Puerto personalizado.
+  - TextCommand revisado para evitar conflicto entre los diferentes tipos de sensores.
+
+_______________
+
 \par 22/02/2026 V2.1.0
-- Conexión Wifi para 4 clientes SerialWifi.h y SerialWifi.cpp
+  - Conexión Wifi para 4 clientes SerialWifi.h y SerialWifi.cpp
 _______________
 
 \par 23/04/2023 V2.0.4
@@ -521,7 +533,7 @@ _______________
 Main include file of the library.*/
 
 // #define DCCPP_LIBRARY_VERSION   "VERSION DCCpp library: 1.4.2"
-#define DCCPP_LIBRARY_VERSION   "DCCpp LMD: 2.1.0"
+#define DCCPP_LIBRARY_VERSION   "DCCpp LMD: 2.1.1"
 
 #ifdef VISUALSTUDIO
 #pragma warning (disable : 4005)
@@ -631,6 +643,7 @@ Main include file of the library.*/
 #include "CurrentMonitor.h"
 #include "Config.h"
 #include "Comm.h"
+#include "CommInterface.h"
 #ifdef USE_TURNOUT
 #include "Turnout.h"
 #endif
@@ -670,6 +683,10 @@ Main include file of the library.*/
 #ifdef USE_KEYBOARD
 #include "Keyboard.h"
 #endif
-
+/*
+#ifdef USE_RF_SENSOR
+#include "RF433.h"
+#endif
+*/
 #include "DCCpp.hpp"
 #endif

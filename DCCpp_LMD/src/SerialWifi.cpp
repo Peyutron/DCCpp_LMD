@@ -25,26 +25,44 @@ void Wifi::InitWifiModule()
     @param AT+RST ESP01 reset
     @param AT+CWLAP Shows available networks
     @param AT+CWJAP_CUR="ssid","pass"  Connect to the ssid
+    @param AT+CIPSTA="192.168.1.200","192.168.1.1","255.255.255.0"
     @param AT+CIFSR Show IP address
     @param AT+CIPMUX=1 Configure multiple connections
     @param AT+CIPSERVER=1,2560 Start the server on the defined port
+
     */
 {
+  WIFI.begin(115200);
+  // Inicia la comunicación con el puerto Serial 1
+  delay(100);
+
+  // Comandos de configuración para módulo ESP01 NonOS
   sendATData("AT+RST\r\n", 500);
   sendATData("AT+CWMODE=1\r\n", 1000);
-  sendATData("AT+CWLAP\r\n", 5000); // Más tiempo para buscar redes default: 3000
+  sendATData("AT+CWLAP\r\n", 5000); // Más tiempo para buscar redes default: 5000
 
   char connection[200];
   sprintf(connection, "AT+CWJAP_CUR=\"%s\",\"%s\"\r\n", WIFI_SSID, WIFI_PASSWORD); 
   sendATData((String)connection, 5000);
-
+  delay(1000);
+  #ifdef CUSTOM_IP
+    char customIP[80];
+    sprintf(customIP, "AT+CIPSTA_DEF=\"%s\",\"%s\",\"%s\"\r\n", WIFI_IP, WIFI_SUBNET, WIFI_GATEWAY); 
+    sendATData((String)customIP, 5000);
+  #endif
   sendATData("AT+CIFSR\r\n", 2000); // Devuelve la dirección IP         
   delay (1500);
+
   sendATData("AT+CIPMUX=1\r\n", 2500); // Configura multiconexión         
   delay (1500);
-  sendATData("AT+CIPSERVER=1,2560\r\n", 1500); // Pone el módulo en modo servidor con el puerto 2560
-  //sendATData("AT+CIPSTATUS\r\n", 2000);
-  delay(500);
+  
+  char customPort[80];
+  sprintf(customPort, "AT+CIPSERVER=1,%s\r\n", PORT );
+  sendATData(customPort, 1500);
+
+  //sendATData("AT+CIPSERVER=1,2560\r\n", 1500); // Pone el módulo en modo servidor con el puerto 2560
+  // sendATData("AT+CIPSTATUS\r\n", 2000);
+  delay(1500);
   Wifi::getWifiIP();
 }
 
@@ -68,7 +86,9 @@ void Wifi::sendATData(String command, const int timeout)
       char c = WIFI.read();
       response+=c;                                                  
     }
-  }    
+  }
+  Serial.println(response);
+
 }
 
 void Wifi::wifiProcess()
@@ -238,7 +258,7 @@ String Wifi::getWifiIP()
   ip_.toCharArray(CharArray,ArrayLength);
   CommManager::printf(CharArray);
   #ifdef USE_OLED
-    Oled::printWifiIp(ip_);
+    Oled::getWifiIp(ip_);
   #endif
   return ip_;
 }

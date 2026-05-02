@@ -22,15 +22,20 @@
 #include "CommInterface.h"
 #include "DCCpp.h"
 
-
+char CommManager::lastOutputBuffer[128] = {0};
 
 // This routine sends DCCpp output and responses to all the devices connected via comm interfaces
-void CommManager::printf(const char *fmt, ...) {
+void CommManager::printf(const char *fmt, ...) 
+{
 	char buf[128] = {0};
 	va_list args;
 	va_start(args, fmt);
 	vsnprintf(buf, sizeof(buf), fmt, args);
 	va_end(args);
+
+	// --- NEW: copiar el mensaje formateado al buffer estático ---
+    strncpy(lastOutputBuffer, buf, sizeof(lastOutputBuffer) - 1);
+    lastOutputBuffer[sizeof(lastOutputBuffer) - 1] = '\0';
 	
 	#ifdef USE_TEXTCOMMAND
 		DCCPP_INTERFACE.print(buf);
@@ -47,22 +52,21 @@ void CommManager::printf(const char *fmt, ...) {
 	#ifdef USE_SERIALAUX
 		SERIALAUX.print(buf);
 	#endif
-	#ifdef USE_OLED
-		// Serial.print( "buf: "); Serial.println(buf);
-		Oled::Monitor(buf);
-	#endif
-	
-
-
-	/*#if !defined(USE_ETHERNET)
-		DCCPP_INTERFACE.println("");	
-	#endif*/	
-
-	/*for(int i = 0; i < nextInterface; i++) {
-		if(interfaces[i] != NULL) {
-			interfaces[i]->send(buf);
+    
+	/*	
+		for(int i = 0; i < nextInterface; i++) 
+		{
+			if(interfaces[i] != NULL) interfaces[i]->send(buf);
 		}
-	}*/
+	*/
+}
+
+const char* CommManager::getLastOutput() {
+    return lastOutputBuffer;
+}
+
+void CommManager::clearLastOutput() {
+    lastOutputBuffer[0] = '\0';
 }
 
 // CommInterface *CommManager::interfaces[10] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};

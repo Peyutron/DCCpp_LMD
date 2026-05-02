@@ -96,7 +96,7 @@ static bool first = true;
 void DCCpp::loop()
 {
 #ifdef USE_TEXTCOMMAND
-	TextCommand::process();              // check for, and process, and new serial commands
+	TextCommand::process();	// check for, and process, and new serial commands
 #endif
 #ifdef USE_SERIALWIFI
 	Wifi::wifiProcess();
@@ -106,25 +106,27 @@ void DCCpp::loop()
 #endif 
 #ifdef USE_SERIALAUX
 	SerialAux::auxprocess();
-#endif 	
-
+#endif
+	
 	if (first)
 	{
 		first = false;
-#if defined(DCCPP_DEBUG_MODE) && defined(DCCPP_PRINT_DCCPP)
+		#if defined(DCCPP_DEBUG_MODE) && defined(DCCPP_PRINT_DCCPP)
 		showConfiguration();
-#endif
+		#endif
 	}
 
 	if (CurrentMonitor::checkTime())
-	{      // if sufficient time has elapsed since last update, check current draw on Main and Program Tracks 
+	{      
+		// if sufficient time has elapsed since last update, check current draw on Main and Program Tracks 
 		mainMonitor.check();
 		progMonitor.check();
 	}
 
 #ifdef USE_S88
   if (S88::checkTime())
-  {      // if sufficient time has elapsed since last update, scan 8 S88 sensors in a row
+  {      
+  	// if sufficient time has elapsed since last update, scan 8 S88 sensors in a row
     S88::check();
   }
 #endif
@@ -140,6 +142,11 @@ void DCCpp::loop()
 	if(!Oled::Menu_On_Off) Keyboard::KeyLoop();
 	else Oled::MenuKeyboard();
 #endif
+/*
+#ifdef USE_RF_SENSOR
+	RF433::rf433process();
+#endif 
+*/
 }
 
 #ifndef USE_ONLY1_INTERRUPT
@@ -167,6 +174,7 @@ void DCCpp::beginMain(uint8_t inSignalPin, uint8_t inSignalEnable, uint8_t inCur
 		return;
 	}
 
+
 	mainMonitor.begin(DCCppConfig::CurrentMonitorMain, DCCppConfig::SignalEnablePinMain, (char *) "<p2>");
 
 	DCCpp::beginMainDccSignal(inSignalPin);
@@ -174,10 +182,10 @@ void DCCpp::beginMain(uint8_t inSignalPin, uint8_t inSignalEnable, uint8_t inCur
 	if (DCCppConfig::SignalEnablePinMain != UNDEFINED_PIN)
 		digitalWrite(DCCppConfig::SignalEnablePinMain, LOW);
 
-#ifdef DCCPP_DEBUG_MODE
-	CommManager::printf("beginMain achivied with pin %d", inSignalPin);
-	//Serial.println(inSignalPin);
-#endif
+	#ifdef DCCPP_DEBUG_MODE
+		CommManager::printf("beginMain achivied with pin %d", inSignalPin);
+		//Serial.println(inSignalPin);
+	#endif
 }
 
 #ifndef USE_ONLY1_INTERRUPT
@@ -252,12 +260,23 @@ void DCCpp::begin()
 #ifdef USE_SERIALWIFI
 	Wifi::InitWifiModule();
 #endif
+#ifdef USE_SERIALBLUETOOTH
+	Bluetooth::InitBluetoothModule();
+#endif
+#ifdef USE_SERIALAUX
+	SerialAux::InitSerialAux();
+#endif	
 #ifdef USE_KEYBOARD
 	Keyboard::init();
 #endif
 	#ifdef USE_ENCODER
 	Keyboard::initEncoder();
 	#endif
+/*
+#ifdef USE_RF_SENSOR
+	RF433::InitRF433();
+#endif
+*/
 #ifdef DCCPP_DEBUG_MODE
 	//pinMode(LED_BUILTIN, OUTPUT);
 	CommManager::printf("begin achieved");
@@ -298,9 +317,10 @@ void DCCpp::beginEthernet(uint8_t *inMac, uint8_t *inIp, EthernetProtocol inProt
 
 void DCCpp::showConfiguration()
 {
-/*	Serial.println(F("*** DCCpp LIBRARY ***"));
-//	Serial.print(F("VERSION DCCpp:      "));
-//	Serial.println(VERSION);
+/*	
+	Serial.println(F("*** DCCpp LIBRARY ***"));
+	// Serial.print(F("VERSION DCCpp:      "));
+	// Serial.println(VERSION);
 	Serial.println(F(DCCPP_LIBRARY_VERSION));
 	Serial.print(F("COMPILED:     "));
 	Serial.print(__DATE__);
@@ -402,16 +422,18 @@ void DCCpp::showConfiguration()
 		Serial.print(F(":"));
 	}
 	Serial.println(DCCppConfig::EthernetMac[5], HEX);
-//	Serial.print(F("PORT:         "));
-//	Serial.println(DCCppConfig::EthernetPort);
+	// Serial.print(F("PORT:         "));
+	// Serial.println(DCCppConfig::EthernetPort);
 	Serial.print(F("IP ADDRESS:   "));
 	Serial.println(Ethernet.localIP());
 
-/*#ifdef IP_ADDRESS
-	Serial.println(F(" (STATIC)"));
-#else
-	Serial.println(F(" (DHCP)"));
-#endif*/
+/*
+	#ifdef IP_ADDRESS
+		Serial.println(F(" (STATIC)"));
+	#else
+		Serial.println(F(" (DHCP)"));
+	#endif
+*/
 
 #else
 	Serial.println(F("SERIAL"));

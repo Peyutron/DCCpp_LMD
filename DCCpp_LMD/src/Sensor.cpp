@@ -45,7 +45,7 @@ void Sensor::begin(int snum, int pin, int pullUp) {
 	}
 
 	this->set(snum, pin, pullUp);
-		
+
 	CommManager::printf("<O>");
 	#ifdef USE_SOUND
 		Sound::ActionOK();

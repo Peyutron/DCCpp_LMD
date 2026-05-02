@@ -1,28 +1,35 @@
+/*****************************************
+
+Oled.h
+Created for Dccpp_LMD by Carlos MC
+
+Part of DCC++ BASE STATION for the Arduino
+
+*****************************************/
+
+
 #ifndef _OLED_h_
 #define _OLED_h_
 
 #include "Config.h"
 #include "DCCpp.h"
 
-/////////////////////////////////////////////////////////////////////////////////////
-//
-// ACTIVA ANIMACION OLED
-#define OLED_ANIMATION
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
-//// Define el número de desvíos que hay en la maqueta para poder almacenar su estado 
+// Define el número de desvíos que hay en la maqueta para poder almacenar su estado 
 #define N_DESVIOS 10 // 10, 20, 30... 
 
 /////////////////////////////////////////////////////////////////////////////////////
 //
 // DEFINE LA DIRECCION DE LA PANTALLA OLED SSD1306
 #define DCCPP_VERSION1 "DCCpp LMD "
-#define DCCPP_VERSION2 "2.1.0"
+#define DCCPP_VERSION2 "2.1.1"
 #define OLED_NAME "SSD1306"
 #define COMM_NAME "SERIAL ONLY"
+#define NEWSCREEN
 #define ACTUALIZA_INFO 750  // Actualiza cada 750ms, con menos deja de funcionar correctamente S88
-#define PAUSA_          2  // Pausa de 6 segundos para mostrar la información. 14x250 = 3500ms
+#define PAUSA_          2   // Pausa de 6 segundos para mostrar la información. 14x250 = 3500ms
 
 #define ACCESORIO 1
 #define SENSORES  2
@@ -42,9 +49,22 @@
 #define GRUPO_F1320 4
 #define GRUPO_F2128 5
 
+struct OledLocomotive {
+                    int id;           // ID de la locomotora (1-10)
+                    int direccionDCC; // Dirección DCC (entero)
+                    int velocidad;    // Velocidad actual (0-255)
+                    bool direccion;    // Dirección (1: avance, 0: atrás)
+                    byte fn0to4;
+                    byte fn5to8;
+                    byte fn9to12;
+                    byte fn13to20;
+                    byte fn21to28;
+                  };
 
-class Oled {
+class Oled 
+{
   public:
+    static void startNewScreen();
     static bool Menu_On_Off;
     static bool PrintScreen;
     static int8_t nMenu;
@@ -58,6 +78,7 @@ class Oled {
     static void GetS88(uint8_t, uint8_t);
     static void GetS88Binary(String);
     #endif
+
     static void GetSensor(uint8_t, uint8_t);
     static void GetOutput(uint8_t, uint8_t, uint8_t);  
     
@@ -65,9 +86,12 @@ class Oled {
     
     #ifdef USE_SERIALWIFI
     // Muestra IP en pantalla de inicio
-    static void printWifiIp(String);
+    static void getWifiIp(String);
     #endif
     
+    // Muestra en pantalla error por consumo
+    static void printOverload();
+
     // Muestra en pantalla la cantidad de Sram disponible
     static void printSram (uint16_t);
     
@@ -102,6 +126,8 @@ private:
     // Imprime los datos seriales en la parte superior izquierda de la pantalla.
     static void printSerial();
     
+    static void printnewSerial();
+
     // Selecciona los diferentes dispositivos de comunicación
     static String SwInput();
     

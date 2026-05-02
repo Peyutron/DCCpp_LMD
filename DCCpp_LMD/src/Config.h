@@ -1,12 +1,13 @@
-/**********************************************************************
+/*****************************************
 
 Config.h
 COPYRIGHT (c) 2013-2016 Gregg E. Berman
 Adapted for DcDcc by Thierry PARIS
+Adapted for Dccpp_LMD by Carlos MC
 
 Part of DCC++ BASE STATION for the Arduino
 
-**********************************************************************/
+*****************************************/
 #ifndef __config_h
 #define __config_h
 
@@ -15,16 +16,38 @@ Part of DCC++ BASE STATION for the Arduino
 /**	Use it as an argument to specify an unused pin. */
 #define UNDEFINED_PIN	255
 
-/* Configuración para conexión wifi "SSID","Password NO FUNCIONA*/
+
+/** Configuración para conexión wifi "SSID","Password */
 
 /** Nombre de la red WiFi */
 #define WIFI_SSID "YOUR_SSID" 
 
 /** Contraseña red WiFi */
-#define WIFI_PASSWORD "YOUR_WIFI_PASS"	//
+#define WIFI_PASSWORD "YOUR_WIFI_PASS"	
 
 /** Max clients connections */
 #define MAX_CLIENTES 4
+
+
+/** Custom Wifi IP */
+// #define CUSTOM_IP
+
+// Custom Wifi IP config
+#ifdef CUSTOM_IP
+/** IP */
+#define WIFI_IP "192.168.1.2"
+
+/** Subnet */
+
+#define WIFI_SUBNET "255.255.255.0"
+
+/** Gateway */
+#define WIFI_GATEWAY "192.168.1.1"
+#endif
+
+/** Port connection*/
+#define PORT "2560"
+
 
 //////////////////////////////////////
 //
@@ -50,7 +73,7 @@ Part of DCC++ BASE STATION for the Arduino
 /** Number of track registers for the programming line. 0 for transient orders, the two others for continual orders for the only loco on this track. */
 #define MAX_PROG_REGISTERS 3
 
-/////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////
 //
 // DEFINE PINS ACCORDING TO MOTOR SHIELD MODEL
 //
@@ -75,9 +98,9 @@ Part of DCC++ BASE STATION for the Arduino
 
 #endif
 
-/////////////////////////////////////////////////////////////////////////////////////
+///////////////////////
 // SELECT MOTOR SHIELD
-/////////////////////////////////////////////////////////////////////////////////////
+///////////////////////
 
 /** Interruption pin for main track.*/
 #define MOTOR_SHIELD_SIGNAL_ENABLE_PIN_MAIN 3
@@ -97,6 +120,32 @@ Part of DCC++ BASE STATION for the Arduino
 
 #define POLOLU_DIRECTION_MOTOR_CHANNEL_PIN_A 7
 #define POLOLU_DIRECTION_MOTOR_CHANNEL_PIN_B 8
+
+
+/////////////////////////////////////
+// Configuración OLED 128x64 U8G2 Lib	
+/////////////////////////////////////
+
+#ifdef USE_OLED
+
+// Activa animación al iniciar
+// #define OLED_ANIMATION
+
+#endif
+
+///////////////////////
+// Configuración Sonido	
+///////////////////////
+
+#ifdef USE_SOUND
+
+// Altavoz o buzzer (+)
+#define PIN_SOUND 6 
+
+#endif
+
+
+
 
 #if defined(USE_ETHERNET)
 enum EthernetProtocol

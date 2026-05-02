@@ -1,11 +1,11 @@
-/**********************************************************************
+/*****************************************
 
 CurrentMonitor.cpp
 COPYRIGHT (c) 2013-2016 Gregg E. Berman
 
 Part of DCC++ BASE STATION for the Arduino
 
-**********************************************************************/
+******************************************/
 
 #include "Arduino.h"
 
@@ -55,8 +55,13 @@ void CurrentMonitor::check()
 	if (this->current > this->currentSampleMax && digitalRead(this->signalPin) == HIGH)
 	{
 		digitalWrite(this->signalPin, LOW);
-		// DCCPP_INTERFACE.print(this->msg);	// print corresponding error message
-		CommManager::printf(this->msg);
+		CommManager::printf(this->msg);	// print corresponding error message
+		#ifdef USE_OLED
+		Oled::printOverload();
+		#endif
+		#ifdef USE_SOUND
+		Sound::ActionError();
+		#endif
 		#if !defined(USE_ETHERNET)
 			DCCPP_INTERFACE.println("");
 		#endif

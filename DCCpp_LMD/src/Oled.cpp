@@ -7,9 +7,9 @@
 
 #ifdef USE_OLED // Evita cargar la librería si #define USE_OLED no esta activo en DCCpp.h 
 #include "Config.h"
-#include "Turnout.h"
+//#include "Turnout.h"
 #include "DCCpp.h"
-#include "CommInterface.h"
+//#include "CommInterface.h"
 #include <Arduino.h>
 #include <U8g2lib.h>
 #ifdef OLED_ANIMATION
@@ -26,6 +26,7 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C u8g2(U8G2_R0, /* clock=*/ SCL, /* data=*/ SD
 
 bool Oled::Menu_On_Off = false;
 bool Oled::PrintScreen = true; // dibuja en pantalla
+bool isOverloadCurrent = false;
 int8_t Oled::nMenu = 0;
 bool on_off = false;
 String serialIn;
@@ -37,6 +38,7 @@ uint8_t address, subAddress, tStatus;
 uint8_t idturnout, turnoutStatus;
 
 uint8_t idsensor, pinsensor, estadosensor;
+
 uint8_t idsalida, pinsalida, estadosalida;
 
 #ifdef USE_KEYBOARD
@@ -46,23 +48,17 @@ const char *menu_strings[MENU_ITEMS] = {
                                         "(3)Accesorios" 
                                         }; //, "(4)Sensores", "(5)Info" };
 uint8_t ActiveAddress = 0;
+
+
 const uint8_t LMAX = 4; // number of loco addresses
-uint16_t LocoAddress[LMAX] = {2, 7, 10, 5};
-uint16_t LocoDirection[LMAX] = {0, 0, 0, 0};
-uint8_t LocoSpeed[LMAX] = {0, 0, 0, 0};
-uint8_t LocoSpeedOld[LMAX] = {0, 0, 0, 0};
-uint16_t LocoFN[LMAX][LMAX]= {
-                              {0, 0, 0, 0},
-                              {0, 0, 0, 0},
-                              {0, 0, 0, 0},
-                              {0, 0, 0, 0}
-                              } ; // [LIGNES][COLONNES] for 13-20 and 21-28 2&3 groups / loco addresses
-byte LocoFN0to4[LMAX] = {0, 0, 0, 0};   // 0 group
-byte LocoFN5to8[LMAX] = {0, 0, 0, 0};    // 1 group
-byte LocoFN9to12[LMAX] = {0, 0, 0, 0};   // 2 group
-byte LocoFN13to20[LMAX] = {0, 0, 0, 0};  // 3 group
-byte LocoFN21to28[LMAX] = {0, 0, 0, 0};  // 4 group
-uint8_t group[LMAX] = {0, 0, 0, 0}; // 9-24 in progress
+OledLocomotive locomotives[LMAX] = {
+      {1, 4, 0, 1, 0, 0, 0, 0, 0},   // ID 1, Dirección DCC 4, velocidad 0, avance
+      {2, 7, 0, 1, 0, 0, 0, 0, 0},   // ID 2, Dirección DCC 7, velocidad 0, avance
+      {3, 6, 0, 1, 0, 0, 0, 0, 0},   // ID 3, Dirección DCC 6, velocidad 0, avance
+      {4, 5, 0, 1, 0, 0, 0, 0, 0}   // ID 4, Dirección DCC 5, velocidad 0, avance
+                                };
+
+uint8_t fnGroup[LMAX] = {0, 0, 0, 0}; // 9-24 in progress
 
 int8_t idturnoutold = -1;
 uint8_t Testado[N_DESVIOS + 1];
@@ -74,13 +70,16 @@ uint8_t accSubScreen = false;
   
 int8_t nDigito[3] = {-1, -1, -1};
 int8_t nDigitoOld[3] = {-1, -1, -1};
-uint8_t posDig = 0; // posicion del cursor al introducir una cadena de digitos
+
+// posicion del cursor al introducir una cadena de digitos
+uint8_t posDig = 0;
 #ifdef USE_ENCODER
 int8_t positionSpeed = 0;
 uint8_t locDireccion = 0;
 int8_t aState;
 int8_t aLastState;  
 #endif
+
 
 bool exitMenu = true;
 
@@ -99,7 +98,7 @@ long previousMillis = 0;
 const long interval = ACTUALIZA_INFO;
 
 
-//  DCCpp::begin
+// DCCpp::begin
 void Oled::init() 
 { 
   u8g2.begin();       // Inicia la pantalla 
@@ -120,29 +119,115 @@ void Oled::init()
     u8g2.print(DCCPP_VERSION2);  // Oled.h
   #endif
   u8g2.sendBuffer();
-  delay(1500);
+  // delay(1500);
   #ifdef USE_SERIALWIFI
     u8g2.clearBuffer(); // Limpia el buffer de la pantalla
-    u8g2.setCursor(20, 30);  
+    u8g2.setCursor(15, 30);  
     u8g2.print("Conectando");  // Oled.h
-    u8g2.setCursor(50, 48);  
+    u8g2.setCursor(15, 48);  
     u8g2.print("Wifi");  // Oled.h
-    u8g2.setCursor(20, 60);  
+    u8g2.setCursor(15, 60);  
     u8g2.print("espere...");  // Oled.h
   #endif
     u8g2.sendBuffer();
+    direccion = true;
 }
 
-// Oled.cpp (interno)
-void Oled::initScreen() 
+void Oled::startNewScreen()
 {
-  if (PrintScreen)
+
+  // configuración
+  u8g2.clearBuffer(); // Limpia el buffer de la pantalla 
+  Oled::printnewSerial(); 
+  u8g2.setFont(u8g2_font_helvB10_tr); // Fuente 6x10
+
+  // fila superior
+  u8g2.setCursor(2, 12);
+  u8g2.print(F("DCC: "));
+  
+  char _cab[4];
+  sprintf(_cab, "%04d", cab);
+  u8g2.print(_cab);
+
+  u8g2.setFont(u8g2_font_helvB08_tr); // Fuente 6x10
+  u8g2.setCursor(90, 10);
+  current = int(DCCpp::getCurrentMain());
+  current = (current / 1024 * 5 / 0.5);
+  u8g2.print(current);
+  u8g2.print(F("mA"));
+
+
+  // fila velocidad dirección
+
+  // u8g2.setFont(u8g2_font_mystery_quest_24_tf); // Fuente 24 esta bien de altura
+  // u8g2.setFont(u8g2_font_open_iconic_all_1x_t); // Fuente 24 esta bien de altura
+  // u8g2.setFont(u8g2_font_streamline_transportation_t); // Print(6); es una locomotora.
+  // u8g2.setFont(u8g2_font_percent_circle_25_hn); // print(1)=12.5 print(2)=25 print(3)=37.5
+  // u8g2.setFont(u8g2_font_helvB24_tf); // Print(6); es una locomotora.
+  u8g2.setFont(u8g2_font_maniac_tr); // Print(6); es una locomotora.
+  
+  if (direccion)
+  {
+    u8g2.setCursor(15, 40);
+    u8g2.print("<");
+  }
+  else
+  {
+    u8g2.setCursor(98, 40);
+    u8g2.print(">");
+
+  }
+  u8g2.setCursor(40, 40);
+  char _speed[4];
+  sprintf(_speed, "%03d", speed);
+  u8g2.print(_speed);
+
+// Accessorios:
+    u8g2.setFont(u8g2_font_lucasfont_alternate_tr); // Fuente 8x10
+    u8g2.setCursor(0, 52);
+    u8g2.print(F("A: "));
+    u8g2.print(address);
+    //u8g2.print(20);
+    u8g2.print(F(" "));
+    u8g2.print(subAddress);
+    // u8g2.print(3);
+    u8g2.print(F(" "));
+    if (tStatus == 0) u8g2.println(F("Closed"));
+    else u8g2.println(F("Open"));
+  
+// Sensores:
+    idsensor = 50;
+    estadosensor = true;
+    u8g2.setCursor(80, 52);
+    u8g2.print(F("S: "));
+
+    char _sensorStatus;
+    if (estadosensor == 1) _sensorStatus = 'Q';
+    else _sensorStatus = 'q';
+
+    char _sensor[7];
+    sprintf(_sensor, "<%c%d>", _sensorStatus, idsensor);
+    u8g2.print(_sensor);
+    u8g2.sendBuffer();  // transfer internal memory to the display
+
+}
+
+// Oled.cpp (private)
+void Oled::initScreen() 
+{  
+
+  if (PrintScreen && !isOverloadCurrent)
   { 
     u8g2.clearBuffer(); // Limpia el buffer de la pantalla
     Oled::printSerial(); // Linea 0 (amarilla) 
     if (on_off) 
-    {
-      u8g2.setFont(u8g2_font_6x10_tr); // Fuente 6x10
+    { 
+      #ifdef NEWSCREEN
+      Oled::startNewScreen();
+      PrintScreen = false;
+      return;
+      #else
+        u8g2.setFont(u8g2_font_6x10_tr); // Fuente 6x10
       u8g2.setCursor(90, 14);
       current = int(DCCpp::getCurrentMain());
       current = (current / 1024 * 5 / 0.5);
@@ -170,6 +255,7 @@ void Oled::initScreen()
         // Sensores:
         u8g2.setCursor(5, 45);
         u8g2.print(F("Sensores: "));
+        u8g2.print(idsensor);
         u8g2.print(idsensor);
         u8g2.print(F(" "));
         u8g2.print(pinsensor);
@@ -203,6 +289,7 @@ void Oled::initScreen()
         u8g2.print(F(" "));
         u8g2.print(estadosalida);
       #endif // USE_OUTPUT
+      #endif
     } 
     else 
     {  // PANTALLA INICIAL
@@ -227,550 +314,25 @@ void Oled::initScreen()
       #endif
       uint8_t a, b, c;
       u8g2.setCursor(5, 60);
-      #ifdef USE_TURNOUT
-        a = EEStore::data.nTurnouts;
+      #ifdef USE_EEPROM
+        #ifdef USE_TURNOUT
+          a = EEStore::data.nTurnouts;
+        #endif
+        #ifdef USE_SENSOR
+          a = EEStore::data.nSensors;
+        #endif
+        #ifdef USE_OUTPUT
+          a = EEStore::data.nOutputs;
+        #endif
+        u8g2.print(F("D:  "));  u8g2.print(a);
+        u8g2.print(F(" S:  ")); u8g2.print(b);
+        u8g2.print(F(" O:  ")); u8g2.print(c);
       #endif
-      #ifdef USE_SENSOR
-        a = EEStore::data.nSensors;
-      #endif
-      #ifdef USE_OUTPUT
-        a = EEStore::data.nOutputs;
-      #endif
-      u8g2.print(F("D:  "));  u8g2.print(a);
-      u8g2.print(F(" S:  ")); u8g2.print(b);
-      u8g2.print(F(" O:  ")); u8g2.print(c);
     }
     u8g2.sendBuffer();  // transfer internal memory to the display
     PrintScreen = false;
   }
 }
-
-#ifdef USE_KEYBOARD
-// Muestra la lista de opciones
-void Oled::MenuLista()
-{ 
-  if (PrintScreen)
-  {
-    u8g2.clearBuffer(); // Limpia el buffer de la pantalla
-    u8g2.setFont(u8g2_font_7x13_tr); // Fuente 7x13
-    h = 25;
-    for( i = 0; i < MENU_ITEMS; i++ ) 
-    {
-      d = (w-u8g2.getStrWidth(menu_strings[i]))/2;
-      u8g2.drawStr(10 , h , menu_strings[i]);
-      h = h + 13;
-    }
-
-    u8g2.sendBuffer();  // transfer internal memory to the display
-    PrintScreen = false;
-  }
-  char key = Keyboard::ReadKey();
-  if (key == '#') Oled::ExitPage();
-}
-
-// from Keyboard::KeyboardProcess(char)
-void Oled::MenuKeyboard()
-{    
- // Serial.print("MenuKeyboard n: "); Serial.println(nMenu);
-  switch (nMenu)
-  {
-    case MLIST:
-      Oled::MenuLista();
-      break;
-    case MLOC:
-      Oled::LocomotiveOled();
-      break;
-    case MDES:
-      Oled::TurnoutOled();
-      break;  
-    case MACC:
-      Oled::AccesoryOled();
-      break;
-  }
-}
-
-void Oled::LocomotiveOled()
-{
-  if (PrintScreen)
-  {
-    u8g2.clearBuffer(); // Limpia el buffer de la pantalla
-    Oled:printSerial();
-    u8g2.setCursor(90, 13);   // Linea 0 (amarilla)
-    u8g2.print(F("#="));
-    u8g2.print(ActiveAddress + 1);
-    // u8g2.setCursor(0, 25);    // Linea 1
-    u8g2.setCursor(0, 25);    // Linea 1
-    u8g2.print(F("D="));
-    u8g2.print(LocoAddress[ActiveAddress]);
-    // u8g2.setCursor(35, 25);   // Linea 1
-    u8g2.setCursor(40, 25);   // Linea 1
-    u8g2.print(F(" V="));
-    u8g2.print(LocoSpeed[ActiveAddress]);
-    // u8g2.setCursor(65, 25);   // Linea 1
-    u8g2.setCursor(80, 25);   // Linea 1
-    if (LocoDirection[ActiveAddress] == 1) u8g2.print(F(" <<<"));
-    else u8g2.print(F(" >>>"));
-
-    // u8g2.setCursor(0, 35);    // Linea 2
-    u8g2.setCursor(0, 38);    // Linea 2
-    String temp = "00000" + String(LocoFN0to4[ActiveAddress], BIN);  // pad with leading zeros
-    int tlen = temp.length() - 5;
-    u8g2.print(temp.substring(tlen));
-    u8g2.print(F(" "));  // modif
-      
-    temp = "0000" + String(LocoFN5to8[ActiveAddress], BIN);
-    tlen = temp.length() - 4;
-    // u8g2.setCursor(40, 35); // Linea 2
-    u8g2.setCursor(45, 38); // Linea 2
-    u8g2.print(temp.substring(tlen));
-    u8g2.print(F("           ")); 
-        
-    // u8g2.setCursor(0, 45); // Linea 3
-    u8g2.setCursor(0, 51); // Linea 3
-    temp = "000" + String(LocoFN9to12[ActiveAddress], BIN);
-    tlen = temp.length() - 4;  
-    u8g2.print(temp.substring(tlen));
-    u8g2.print(F(" ")); 
-        
-    u8g2.setCursor(45, 51); // Linea 4 
-    temp = "0000000" + String(LocoFN13to20[ActiveAddress], BIN);
-    tlen = temp.length()-8;  
-    u8g2.print(temp.substring(tlen));
-    u8g2.print(String(LocoFN13to20[ActiveAddress])); 
-    u8g2.print(F(" 2")); 
-        
-    u8g2.setCursor(0, 64);       
-    temp = "0000000" + String(LocoFN21to28[ActiveAddress], BIN);
-    tlen = temp.length()- 8;  
-    u8g2.print(temp.substring(tlen));
-    u8g2.print(F(" 3"));       
-    // Serial.println("Imprime LocomotoraOled FUN");
-    
-    // False loc / True fun
-    if (mFunciones)
-    {
-      u8g2.setDrawColor(0); // color invertido
-      u8g2.drawBox(15, 18,   85, 40);
-      u8g2.setDrawColor(1); // Color normal
-      u8g2.drawRFrame(15, 18, 85, 40,7);
-      u8g2.setCursor(30, 35);
-      u8g2.print(F("Grupo: "));
-      u8g2.print(group[ActiveAddress]);
-      u8g2.setCursor(22, 49);
-      u8g2.print(F("Funcion: ?"));
-    } // fin mFunciones 
-    u8g2.sendBuffer();  // transfer internal memory to the display
-    PrintScreen = false;
-  } // fin PrintScreen
-
-  char key = Keyboard::ReadKey();
-  if (key != 0)
-  {
-    if (!mFunciones) // False 
-    {
-      switch (key) 
-      {
-        case '#': // Salida
-          // Serial.println("Sale LocomotoraOled");   // DEBUG
-          Oled::ExitPage();
-          break;
-        case '*':
-          ActiveAddress++;
-          if (ActiveAddress > 3) ActiveAddress = 0;
-          PrintScreen = true;
-          positionSpeed = LocoSpeed[ActiveAddress];
-          locDireccion = LocoDirection[ActiveAddress];
-          delay(150); // no afecta al bucle   
-          break;
-        /*case '1':   // Grupo 0 - 4
-        case '2':   // Grupo 5 - 8
-        case '3':   // Grupo 9 - 13
-        case '4':   // Grupo 14 - 20
-        case '5':   // Grupo 21 - 28
-          char keygroup = key;      
-          group[ActiveAddress] = keygroup - 48;
-          PrintScreen = true;
-          mFunciones = !mFunciones;
-          key = 9;
-          delay(150); // no afecta al bucle   
-          break;*/
-      }
-    } 
-    else  // Modo funciones
-    { 
-      uint8_t nFun = key - 48;
-      // Serial.print("Key nFun: ");
-      // Serial.println(nFun);
-      switch (group[ActiveAddress]) 
-      {
-        case GRUPO_F04:
-          if (nFun <= 4){
-            if (bitRead(LocoFN0to4[ActiveAddress], nFun) == 0 ) 
-            {
-              bitWrite(LocoFN0to4[ActiveAddress], nFun, 1);
-              //if (nFun == 0) LocoFN0to4[ActiveAddress] = LocoFN0to4[ActiveAddress] + 16; 
-            } 
-            else 
-            {
-              if (bitRead(LocoFN0to4[ActiveAddress], nFun) == 1 ) 
-                {
-                  bitWrite(LocoFN0to4[ActiveAddress], nFun, 0);
-                  // LocoFN0to4[ActiveAddress] = LocoFN0to4[ActiveAddress] - 16;
-                  //if (nFun == 0) LocoFN0to4[ActiveAddress] = LocoFN0to4[ActiveAddress] - 16;
-                }
-              }
-              // Serial.print(LocoFN0to4[ActiveAddress], BIN);
-              // Serial.println(" LocoFN0to4[ActiveAddress] d ");
-              // Serial.print(LocoFN0to4[ActiveAddress], DEC);
-              // Serial.println(" LocoFN0to4[ActiveAddress]");
-            }
-            break;
-          case GRUPO_F58:
-            if (nFun <= 4){
-              if (bitRead(LocoFN5to8[ActiveAddress], nFun) == 0 ) {
-                bitWrite(LocoFN5to8[ActiveAddress], nFun, 1);
-              } else {
-                if (bitRead(LocoFN5to8[ActiveAddress], nFun) == 1 ) {
-                  bitWrite(LocoFN5to8[ActiveAddress], nFun, 0);
-                }
-              }
-              // Serial.print(LocoFN5to8[ActiveAddress], BIN);
-              // Serial.println(" LocoFN5to8[ActiveAddress] d ");
-              // Serial.print(LocoFN5to8[ActiveAddress], DEC);
-              // Serial.println(" LocoFN5to8[ActiveAddress]");
-            }
-            break;
-          case GRUPO_F0912:
-            if (nFun <= 4){
-              if (bitRead(LocoFN9to12[ActiveAddress], nFun) == 0 ) {
-                bitWrite(LocoFN9to12[ActiveAddress], nFun, 1);
-              } else {
-                if (bitRead(LocoFN9to12[ActiveAddress], nFun) == 1 ) {
-                  bitWrite(LocoFN9to12[ActiveAddress], nFun, 0);
-                }
-              }
-            // Serial.print(LocoFN9to12[ActiveAddress], BIN);
-            // Serial.println(" LocoFN9to12[ActiveAddress] d ");
-            // Serial.print(LocoFN9to122[ActiveAddress], DEC);
-            // Serial.println(" LocoFN9to12[ActiveAddress]");
-            }
-            break;
-          case GRUPO_F1320:
-            if (nFun <= 8 ){
-              if (bitRead(LocoFN13to20[ActiveAddress], nFun) == 0 ) {
-                bitWrite(LocoFN13to20[ActiveAddress], nFun, 1);
-              } else {
-                if (bitRead(LocoFN13to20[ActiveAddress], nFun) == 1 ) {
-                  bitWrite(LocoFN13to20[ActiveAddress], nFun, 0);
-                }
-              }
-            // Serial.print(LocoFN13to20[ActiveAddress], BIN);
-            // Serial.println(" LocoFN13to20[ActiveAddress] d ");
-            // Serial.print(LocoFN13to20[ActiveAddress], DEC);
-            // Serial.println(" LocoFN13to20[ActiveAddress]");
-            }
-            break;
-          case GRUPO_F2128:
-            if (nFun <= 8){
-              if (bitRead(LocoFN21to28[ActiveAddress], nFun) == 0 ) {
-                bitWrite(LocoFN21to28[ActiveAddress], nFun, 1);
-              } else {
-                if (bitRead(LocoFN21to28[ActiveAddress], nFun) == 1 ) {
-                  bitWrite(LocoFN21to28[ActiveAddress], nFun, 0);
-                }
-              }
-            // Serial.print(LocoFN21to28[ActiveAddress], BIN);
-            // Serial.println(" LocoFN21to28[ActiveAddress] d ");
-            // Serial.print(LocoFN21to28[ActiveAddress], DEC);
-            // Serial.println(" LocoFN21to28[ActiveAddress]");
-            }
-            break;
-          case '#':   // Salida
-            PrintScreen = true;
-            mFunciones = !mFunciones;
-            group[ActiveAddress] = 0;
-            delay(150); // no afecta al bucle
-            break;
-      } // fin switch     
-      if (Oled::CreateFunctionCommand != ""){
-        Oled::SendCommand(Oled::CreateFunctionCommand((group[ActiveAddress])));
-        PrintScreen = true;
-        mFunciones = !mFunciones;
-        group[ActiveAddress] = 0;
-      } // fin Oled::CreateFunctionCommand
-    } // fin modo locomotora / funciones
-  } // fin if key 
-  
-  if (locDireccion != LocoDirection[ActiveAddress])
-  {
-    if (LocoDirection[ActiveAddress] == 0) LocoDirection[ActiveAddress] = 1;
-    else LocoDirection[ActiveAddress] = 0;
-    Oled::SendCommand(Oled::CreateLocoCommand());
-    PrintScreen = true;
-  }
-  if (positionSpeed != LocoSpeed[ActiveAddress])
-  {
-    PrintScreen = true;
-    LocoSpeed[ActiveAddress] = positionSpeed;
-    Oled::SendCommand(Oled::CreateLocoCommand());
-    //Serial.println("Encoder: "); Serial.print(positionSpeed);
-  }
-}
-
-void Oled::TurnoutOled()
-{ 
-  if (PrintScreen)
-  {
-    u8g2.clearBuffer(); // Limpia el buffer de la pantalla
-    Oled:printSerial();
-    u8g2.setFont(u8g2_font_7x13_tr); // Fuente 7x13
-    u8g2.setCursor(70,13); // 
-    u8g2.print(F("Desvios"));
-    u8g2.setCursor(5,30); // // line 2
-    u8g2.print(F("Id: "));
-    u8g2.print(idturnout);
-    if (!Testado[idturnout]) u8g2.print(F(" Desviado      "));
-    else u8g2.print(F(" Recto     ")); 
-    u8g2.setCursor(5, 48); // line 3
-    for (uint8_t z = 1; z < (sizeof(Testado)/2)+1; z++) u8g2.print(Testado[z]);
-    u8g2.setCursor(5, 60); // line 3
-    for (uint8_t z = (sizeof(Testado)/2)+1; z < sizeof(Testado); z++) u8g2.print(Testado[z]);
-    
-    if (mFunciones)
-    {                           
-      u8g2.setDrawColor(0); // color invertido
-      u8g2.drawBox(25, 18, 85, 40);
-      u8g2.setDrawColor(1); // Color normal
-      u8g2.drawRFrame(25, 18, 85, 40,6);
-      u8g2.setCursor(33, 35);
-      u8g2.print(F("Select ID: "));
-      u8g2.setCursor(50, 49);
-      for (uint8_t d = 0; d < 3; d++) 
-           if (nDigito[d] != nDigitoOld[d])
-           u8g2.print(nDigito[d]);
-    }
-    u8g2.sendBuffer();  // transfer internal memory to the display
-    PrintScreen = false;  
-  } // fin PrintScreen
-
-  char key = Keyboard::ReadKey();
-  if (key != 0)
-  {
-    bool validate = true;
-    switch (key) 
-    {
-      case '*': //
-        if (idturnoutold != 0)
-        {
-        if (idturnout != idturnoutold)
-        {
-          idturnout =  Oled::GetNumber(nDigito);
-          if (idturnout > sizeof(Testado))
-          {
-            serialIn = "Error";
-            Oled::printSerial();
-            validate = false;
-          } 
-          else 
-          {
-            idturnoutold = idturnout;
-          }
-        } 
-        if (validate)
-        {
-          if (idturnout == idturnoutold)
-          {
-            if (Testado[idturnout] != 0)Testado[idturnout] = 0; 
-            else Testado[idturnout] = 1;
-            Oled::SendCommand(Oled::CreateTurnoutCommand());
-          }
-        }
-        PrintScreen = true;  mFunciones = false;
-        }
-        break;
-      
-      case '#': // Salida
-        if (mFunciones) { 
-          mFunciones = false; PrintScreen = true; 
-          Oled::ClearNumbers();  
-        } else Oled::ExitPage();
-        break;
-      
-      default:
-        delay (100); // No afecta al bucle
-        nDigito[posDig] = key - 48;
-        PrintScreen = true; mFunciones = true;
-        idturnoutold = -1;
-        posDig = posDig + 1;
-        if (posDig == 3)posDig = 0;
-        break;
-    } // fin switch
-  } // fin if (key != 0)
-    // address is the primary address of the decoder controlling this turnout (0-511)
-    // subaddress is the subaddress of the decoder controlling this turnout (0-3)
-    // activate is either (0) (Deactivate, Straight, Closed) or (1) (Activate, Turn, Thrown)
-}
-
-void Oled::AccesoryOled()
-{
-  if (PrintScreen)
-  {
-    u8g2.clearBuffer(); // Limpia el buffer de la pantalla
-    Oled:printSerial();
-    u8g2.setFont(u8g2_font_7x13_tr); // Fuente 7x13
-    u8g2.setCursor(75,13); // 
-    u8g2.print(F("Acces"));
-    u8g2.setCursor(5,30); // // line 2
-    u8g2.print(F("Addr: "));
-    u8g2.print(accAddr);
-    u8g2.print(F(" Sub: "));
-    u8g2.print(accSubAddr);
-    u8g2.setCursor(5, 50); // line 3
-    if (!accStatus) u8g2.print(F(" Encendido "));
-    else u8g2.print(F(" Apagado "));   
-    if (mFunciones)
-    {
-      u8g2.setDrawColor(0); // color invertido
-      u8g2.drawBox(25, 18, 85, 40);
-      u8g2.setDrawColor(1); // Color normal
-      u8g2.drawRFrame(20, 18, 95, 40,6);
-      u8g2.setCursor(28, 35);
-      if (!accSubScreen) u8g2.print(F("Select addr:"));
-      else u8g2.print(F("Select sub:"));
-      u8g2.setCursor(55, 49);
-      for (uint8_t d = 0; d < 3; d++) 
-      {
-        if (nDigito[d] != nDigitoOld[d]) u8g2.print(nDigito[d]);
-      }
-    }
-  u8g2.sendBuffer();  // transfer internal memory to the display
-  PrintScreen = false;  
-  } // fin PrintScreen
-
-  char key = Keyboard::ReadKey();
-  if (key != 0) 
-  {
-    bool validate = true;
-    switch (key) 
-    {
-    case '*': //
-      if ((accAddr == accAddrOld) && (accSubAddr == accSubAddrOld) )
-      {
-        Oled::SendCommand(Oled::CreateAccesoryCommand());
-      } 
-      else 
-      {
-        if (!accSubScreen)
-        {
-          if (accAddrOld != 0)
-          {
-            if (accAddr != accAddrOld)
-            {
-              accAddr =  Oled::GetNumber(nDigito);
-              accAddrOld = accAddr;
-              accSubScreen = true;
-            }
-          }
-        } 
-        else 
-        {
-          Serial.print("sdir: "); Serial.println(accSubAddr);
-          if (accSubAddrOld != 0)
-          {
-            if (accSubAddr != accSubAddrOld)
-            {
-              accSubAddr =  Oled::GetNumber(nDigito);
-              accSubAddrOld = accSubAddr;
-              accSubScreen = false;
-            }
-            if (accStatus != 0) accStatus = 0; 
-            else accStatus = 1;
-          }  
-        }
-      }
-        PrintScreen = true;  mFunciones = false;
-      
-        break;
-      
-
-    case '#': // Salida
-        if (mFunciones) { 
-          mFunciones = false; PrintScreen = true; 
-          Oled::ClearNumbers();  
-          Serial.println(F("Sale dialogo"));
-        } else Oled::ExitPage();
-        break;
-      
-      default:
-        //delay (100); // No afecta al bucle
-        nDigito[posDig] = key - 48;
-        PrintScreen = true; mFunciones = true;
-        accAddrOld = 255;
-        accSubAddrOld = 255;
-        posDig = posDig + 1;
-        if (posDig == 3) posDig = 0;
-        break;
-    } // fin switch
-  } // fin if (key != 0)
-    // address is the primary address of the decoder controlling this turnout (0-511)
-    // subaddress is the subaddress of the decoder controlling this turnout (0-3)
-    // activate is either (0) (Deactivate, Straight, Closed) or (1) (Activate, Turn, Thrown)
-}
-
-void Oled::ExitPage()
-{
-  Oled::PrintScreen = true;
-  Oled::nMenu = -1;          
-  Oled::Menu_On_Off = false;
-}
-
-uint8_t Oled::GetNumber(char num[])
-{  // obtiene un número de 3 cifras
-  uint8_t number=num[0];              // desde un char array
-  for (uint8_t i=1;i<3;i++)
-  { 
-    if (nDigito[i] != nDigitoOld[i]) number = number*10+num[i];
-  }
-  Oled::ClearNumbers();
-  return number;
-}
-
-void Oled::ClearNumbers()
-{
-  posDig = 0; // Primera posición del array
-  for (uint8_t i=1;i<3;i++)
-  {
-    nDigitoOld[i] = -1;
-    nDigito[i] = -1;
-  }   // todo en -1 para que no lo tome en cuenta
-}
-
-#endif // USE_KEYBOARD
-#ifdef USE_ENCODER
-ISR(PCINT0_vect)
-{
-  if (Oled::nMenu == MLOC)
-  {
-    aState = digitalRead(PINCLK); // Reads the "current" state of the outputA
-    // If the previous and the current state of the outputA are different, that means a Pulse has occured
-    if (aState != aLastState)
-    {     
-      // If the outputB state is different to the outputA state, that means the encoder is rotating clockwise 
-      if (digitalRead(PINDT) != aState) positionSpeed++;
-      else positionSpeed--;
-    }
-    if (positionSpeed <= 0) positionSpeed = 0;
-    positionSpeed = constrain(positionSpeed, 0, 126);
-  }
-} 
-   aLastState = aState; // Updates the previous state of the outputA with the current state
-
-if (!digitalRead(PINSW))
-{ // Cambio de dirección
-    locDireccion = !locDireccion;
-  }
-}
-#endif // USE_ENCODER
 
 void Oled::printSerial()
 { 
@@ -780,13 +342,22 @@ void Oled::printSerial()
   u8g2.print(serialIn);
 }
 
+void Oled::printnewSerial()
+{ 
+  // Imprime la linea 0
+  u8g2.setFont(u8g2_font_7x13_tr); // Fuente 7x13
+  u8g2.setCursor(5, 64);  // Linea 0 (amarilla)
+  u8g2.print(serialIn);
+}
+
 void Oled::Monitor(char *m)
 {
   if (m[1] == 'a'|| m[1] == 'y') return;  // OLED para que no muestre el consumo o S88 con cada consulta 
   else 
   {
     serialIn = "";
-    serialIn += m;    
+    serialIn += m;
+    serialIn = "<" + serialIn + ">";    
     PrintScreen = true;
     }
 }
@@ -813,9 +384,10 @@ void Oled::updateOled() { //  DCCpp::loop
 */
 void Oled::OledDCCon(bool onOff) 
 { 
-  // DCCpp::powerOn
+  // DCCpp::powerOn();
   on_off = onOff;
   timerpantalla = 0;
+  isOverloadCurrent = false;
 }
 
 void Oled::GetThrottle(int tCab, int vel, int direc) 
@@ -836,21 +408,22 @@ void Oled::GetAccesories(uint8_t addr, uint8_t subAddr, uint8_t Status)
 }
 
 #ifdef USE_S88    
-// S88::check = 3
-void Oled::GetS88(uint8_t id, uint8_t estado)
-{ 
-  S88Binary = "";
-  idsensor = id;
-  estadosensor = estado;
-  PrintScreen = true;
-}
-// S88::check = 0
-void Oled::GetS88Binary(String dataS)
-{  
-  S88Binary = dataS;
-  PrintScreen = true;
-}
+  // S88::check = 3
+  void Oled::GetS88(uint8_t id, uint8_t estado)
+  { 
+    S88Binary = "";
+    idsensor = id;
+    estadosensor = estado;
+    PrintScreen = true;
+  }
+  // S88::check = 0
+  void Oled::GetS88Binary(String dataS)
+  {  
+    S88Binary = dataS;
+    PrintScreen = true;
+  }
 #endif // USE_S88
+
 // Sensor::status
 void Oled::GetSensor(uint8_t num, uint8_t pullUp) 
 {
@@ -870,12 +443,12 @@ void Oled::GetOutput(uint8_t num, uint8_t Pin, uint8_t state)
 }
 
 #ifdef USE_SERIALWIFI
-// Muestra la IP del módulo ESP01 comando "I" TextCommand.cpp
-void Oled::printWifiIp(String ip) 
-{ 
-  wifiIp = ip;
-  PrintScreen = true;
-}
+  // Muestra la IP del módulo ESP01 comando "I" TextCommand.cpp
+  void Oled::getWifiIp(String ip) 
+  { 
+    wifiIp = ip;
+    PrintScreen = true;
+  }
 #endif  // USE_SERIALWIFI
 
 
@@ -1051,6 +624,22 @@ void Oled::printDeleteMemory()
   timerpantalla = PAUSA_;
 }
 
+// Error de consumo en la vía principal
+void Oled::printOverload()
+{
+  isOverloadCurrent = true;
+  u8g2.clearBuffer(); // Limpia el buffer de la pantalla
+  u8g2.drawTriangle(63, 0, 52, 14, 74, 14);
+  u8g2.setFont(u8g2_font_9x18_tf); // Fuente 10x20
+  // u8g2.setFont(u8g2_font_x13_tr); // Fuente 7x13
+  u8g2.setCursor(4, 35);
+  u8g2.println(F("Cortocircuito"));  
+  // u8g2.setFont(u8g2_font_10x20_tr); // Fuente 10x20
+  u8g2.setCursor(4, 55);
+  u8g2.print(F("via principal"));
+  u8g2.sendBuffer();  // transfer internal memory to the display
+}
+
 // TextCommand::parse -> 'F'
 void Oled::printSram(uint16_t ram) 
 {
@@ -1069,71 +658,602 @@ void Oled::printSram(uint16_t ram)
   //timerpantalla = PAUSA_;
 }
 
-#ifdef USE_KEYBOARD
-String Oled::CreateLocoCommand()
-{
-  String data = "t" + (String)(ActiveAddress + 1) + " " +
-                      (String)LocoAddress[ActiveAddress] + " " + 
-                      (String)LocoSpeed[ActiveAddress] + " " + 
-                      (String)LocoDirection[ActiveAddress];
-  return data;
-}
-
-String Oled::CreateFunctionCommand(uint8_t grupo)
-{
-  String sdata = "f ";
-  uint16_t fx = 0;
-  switch (grupo) 
+#ifdef USE_ENCODER
+  ISR(PCINT0_vect)
   {
-    case GRUPO_F04 :
-      Serial.print("LocoFN0to4: ");
-      Serial.println(LocoFN0to4[ActiveAddress]);
-      fx = LocoFN0to4[ActiveAddress] + 128 ; 
-      sdata = sdata + (String)LocoAddress[ActiveAddress] + " " + fx;
-      break;
-    case GRUPO_F58:
-      fx = LocoFN5to8[ActiveAddress] + 176;
-      sdata = sdata + (String)LocoAddress[ActiveAddress] + " " + fx;
-      break;
-    case GRUPO_F0912:
-      fx = LocoFN9to12[ActiveAddress] + 160;
-      sdata = sdata + (String)LocoAddress[ActiveAddress] + " " + fx;
-      break;
-    case GRUPO_F1320:
-      fx = LocoFN13to20[ActiveAddress];
-      sdata = sdata + (String)LocoAddress[ActiveAddress] + " 222 " + fx;
-      // do 
-      break;
-    case GRUPO_F2128:
-      fx = LocoFN21to28[ActiveAddress];
-      sdata = sdata + (String)LocoAddress[ActiveAddress] + " 223 " + fx;
-      break;
+    if (Oled::nMenu == MLOC)
+    {
+      aState = digitalRead(PINCLK); // Reads the "current" state of the outputA
+      // If the previous and the current state of the outputA are different, that means a Pulse has occured
+      if (aState != aLastState)
+      {     
+        // If the outputB state is different to the outputA state, that means the encoder is rotating clockwise 
+        if (digitalRead(PINDT) != aState) positionSpeed++;
+        else positionSpeed--;
+      }
+      if (positionSpeed <= 0) positionSpeed = 0;
+      positionSpeed = constrain(positionSpeed, 0, 126);
+    }
+   
+     aLastState = aState; // Updates the previous state of the outputA with the current state
+  
+    if (!digitalRead(PINSW))
+    { // Cambio de dirección
+      locDireccion = !locDireccion;
+    }
   }
-  Serial.print("create fun commands: "); Serial.println(sdata);
-  return sdata;
-}
+#endif // USE_ENCODER
 
-String Oled::CreateTurnoutCommand()
-{
-  String data = "T" + (String)idturnout + " " +
-                      (String)Testado[idturnout] + ">";
-  return data;
-}
+#ifdef USE_KEYBOARD
+  // Muestra la lista de opciones
+  void Oled::MenuLista()
+  { 
+    if (PrintScreen)
+    {
+      u8g2.clearBuffer(); // Limpia el buffer de la pantalla
+      u8g2.setFont(u8g2_font_7x13_tr); // Fuente 7x13
+      h = 25;
+      for( i = 0; i < MENU_ITEMS; i++ ) 
+      {
+        d = (w-u8g2.getStrWidth(menu_strings[i]))/2;
+        u8g2.drawStr(10 , h , menu_strings[i]);
+        h = h + 13;
+      }
 
-String Oled::CreateAccesoryCommand()
-{
-  String data = "a " + (String)(accAddr) + " " +
-                      (String)accSubAddr + " " + 
-                      (String)accStatus;
-  return data;
-}
+      u8g2.sendBuffer();  // transfer internal memory to the display
+      PrintScreen = false;
+    }
+    char key = Keyboard::ReadKey();
+    if (key == '#') Oled::ExitPage();
+  }
+    
+    // from Keyboard::KeyboardProcess(char)
+    void Oled::MenuKeyboard()
+    {    
+    // Serial.print("MenuKeyboard n: "); Serial.println(nMenu);
+    switch (nMenu)
+    {
+      case MLIST:
+        Oled::MenuLista();
+        break;
+      case MLOC:
+        Oled::LocomotiveOled();
+        break;
+      case MDES:
+        Oled::TurnoutOled();
+        break;  
+      case MACC:
+        Oled::AccesoryOled();
+        break;
+    }
+  }
+  
+  void Oled::LocomotiveOled() // USE_KEYBOARD
+  {
+    if (PrintScreen)
+    {
+      u8g2.clearBuffer(); // Limpia el buffer de la pantalla
+      Oled:printSerial();
+      u8g2.setCursor(90, 13);   // Linea 0 (amarilla)
+      u8g2.print(F("#="));
+      u8g2.print(ActiveAddress + 1);
+      // u8g2.setCursor(0, 25);    // Linea 1
+      u8g2.setCursor(0, 25);    // Linea 1
+      u8g2.print(F("D="));
+      // u8g2.print(LocoAddress[ActiveAddress]);
+      u8g2.print(locomotives[ActiveAddress].direccionDCC);
+      // u8g2.setCursor(35, 25);   // Linea 1
+      u8g2.setCursor(40, 25);   // Linea 1
+      u8g2.print(F(" V="));
+      // u8g2.print(LocoSpeed[ActiveAddress]);
+      u8g2.print(locomotives[ActiveAddress].velocidad);
+      // u8g2.setCursor(65, 25);   // Linea 1
+      u8g2.setCursor(80, 25);   // Linea 1
+      if (locomotives[ActiveAddress].direccion == 1) u8g2.print(F(" <<<"));
+      else u8g2.print(F(" >>>"));
+  
+      // u8g2.setCursor(0, 35);    // Linea 2
+      u8g2.setCursor(0, 38);    // Linea 2
+      String temp = "00000" + String(locomotives[ActiveAddress].fn0to4, BIN);  // pad with leading zeros
+      int tlen = temp.length() - 5;
+      u8g2.print(temp.substring(tlen));
+      u8g2.print(F(" "));  // modif
+        
+      temp = "0000" + String(locomotives[ActiveAddress].fn5to8, BIN);
+      tlen = temp.length() - 4;
+      // u8g2.setCursor(40, 35); // Linea 2
+      u8g2.setCursor(45, 38); // Linea 2
+      u8g2.print(temp.substring(tlen));
+      u8g2.print(F("           ")); 
+          
+      // u8g2.setCursor(0, 45); // Linea 3
+      u8g2.setCursor(0, 51); // Linea 3
+      temp = "000" + String(locomotives[ActiveAddress].fn9to12, BIN);
+      tlen = temp.length() - 4;  
+      u8g2.print(temp.substring(tlen));
+      u8g2.print(F(" ")); 
+          
+      u8g2.setCursor(45, 51); // Linea 4 
+      temp = "0000000" + String(locomotives[ActiveAddress].fn13to20, BIN);
+      tlen = temp.length()-8;  
+      u8g2.print(temp.substring(tlen));
+      u8g2.print(String(locomotives[ActiveAddress].fn13to20)); 
+      u8g2.print(F(" 2")); 
+          
+      u8g2.setCursor(0, 64);       
+      temp = "0000000" + String(locomotives[ActiveAddress].fn21to28, BIN);
+      tlen = temp.length()- 8;  
+      u8g2.print(temp.substring(tlen));
+      u8g2.print(F(" 3"));       
+      // Serial.println("Imprime LocomotoraOled FUN");
+      
+      // False loc / True fun
+      if (mFunciones)
+      {
+        u8g2.setDrawColor(0); // color invertido
+        u8g2.drawBox(15, 18,   85, 40);
+        u8g2.setDrawColor(1); // Color normal
+        u8g2.drawRFrame(15, 18, 85, 40,7);
+        u8g2.setCursor(30, 35);
+        u8g2.print(F("Grupo: "));
+        u8g2.print(fnGroup[ActiveAddress]);
+        u8g2.setCursor(22, 49);
+        u8g2.print(F("Funcion: ?"));
+      } // fin mFunciones 
+      u8g2.sendBuffer();  // transfer internal memory to the display
+      PrintScreen = false;
+    } // fin PrintScreen
 
-void Oled::SendCommand(String dataS)
-{
-  char com[16];
-  dataS.toCharArray(com, 16);
-  TextCommand::parse(com);
-}
+    char key = Keyboard::ReadKey();
+    if (key != 0)
+    {
+      if (!mFunciones) // False 
+      {
+        switch (key) 
+        {
+          case '#': // Salida
+            // Serial.println("Sale LocomotoraOled");   // DEBUG
+            Oled::ExitPage();
+            break;
+          case '*':
+            ActiveAddress++;
+            if (ActiveAddress > 3) ActiveAddress = 0;
+            PrintScreen = true;
+            // positionSpeed = LocoSpeed[ActiveAddress];
+            positionSpeed = locomotives[ActiveAddress].velocidad;
+            // locDireccion = LocoDirection[ActiveAddress];
+            locDireccion = locomotives[ActiveAddress].direccion;
+            delay(150); // no afecta al bucle   
+            break;
+          /*case '1':   // Grupo 0 - 4
+          case '2':   // Grupo 5 - 8
+          case '3':   // Grupo 9 - 13
+          case '4':   // Grupo 14 - 20
+          case '5':   // Grupo 21 - 28
+            char keygroup = key;      
+            group[ActiveAddress] = keygroup - 48;
+            PrintScreen = true;
+            mFunciones = !mFunciones;
+            key = 9;
+            delay(150); // no afecta al bucle   
+            break;*/
+        }
+      } 
+      else  // Modo funciones
+      { 
+        uint8_t nFun = key - 48;
+        // Serial.print("Key nFun: ");
+        // Serial.println(nFun);
+        switch (fnGroup[ActiveAddress]) 
+        {
+          case GRUPO_F04:
+            if (nFun <= 4){
+              if (bitRead(locomotives[ActiveAddress].fn0to4, nFun) == 0 ) 
+              {
+                bitWrite(locomotives[ActiveAddress].fn0to4, nFun, 1);
+                //if (nFun == 0) LocoFN0to4[ActiveAddress] = LocoFN0to4[ActiveAddress] + 16; 
+              } 
+              else 
+              {
+                if (bitRead(locomotives[ActiveAddress].fn0to4, nFun) == 1 ) 
+                  {
+                    bitWrite(locomotives[ActiveAddress].fn0to4, nFun, 0);
+                    // LocoFN0to4[ActiveAddress] = LocoFN0to4[ActiveAddress] - 16;
+                    //if (nFun == 0) LocoFN0to4[ActiveAddress] = LocoFN0to4[ActiveAddress] - 16;
+                  }
+                }
+                // Serial.print(LocoFN0to4[ActiveAddress], BIN);
+                // Serial.println(" LocoFN0to4[ActiveAddress] d ");
+                // Serial.print(LocoFN0to4[ActiveAddress], DEC);
+                // Serial.println(" LocoFN0to4[ActiveAddress]");
+              }
+              break;
+            case GRUPO_F58:
+              if (nFun <= 4){
+                if (bitRead(locomotives[ActiveAddress].fn5to8, nFun) == 0 ) {
+                  bitWrite(locomotives[ActiveAddress].fn5to8, nFun, 1);
+                } else {
+                  if (bitRead(locomotives[ActiveAddress].fn5to8, nFun) == 1 ) {
+                    bitWrite(locomotives[ActiveAddress].fn5to8, nFun, 0);
+                  }
+                }
+                // Serial.print(LocoFN5to8[ActiveAddress], BIN);
+                // Serial.println(" LocoFN5to8[ActiveAddress] d ");
+                // Serial.print(LocoFN5to8[ActiveAddress], DEC);
+                // Serial.println(" LocoFN5to8[ActiveAddress]");
+              }
+              break;
+            case GRUPO_F0912:
+              if (nFun <= 4){
+                if (bitRead(locomotives[ActiveAddress].fn9to12, nFun) == 0 ) {
+                  bitWrite(locomotives[ActiveAddress].fn9to12, nFun, 1);
+                } else {
+                  if (bitRead(locomotives[ActiveAddress].fn9to12, nFun) == 1 ) {
+                    bitWrite(locomotives[ActiveAddress].fn9to12, nFun, 0);
+                  }
+                }
+              // Serial.print(LocoFN9to12[ActiveAddress], BIN);
+              // Serial.println(" LocoFN9to12[ActiveAddress] d ");
+              // Serial.print(LocoFN9to122[ActiveAddress], DEC);
+              // Serial.println(" LocoFN9to12[ActiveAddress]");
+              }
+              break;
+            case GRUPO_F1320:
+              if (nFun <= 8 ){
+                if (bitRead(locomotives[ActiveAddress].fn13to20, nFun) == 0 ) {
+                  bitWrite(locomotives[ActiveAddress].fn13to20, nFun, 1);
+                } else {
+                  if (bitRead(locomotives[ActiveAddress].fn13to20, nFun) == 1 ) {
+                    bitWrite(locomotives[ActiveAddress].fn13to20, nFun, 0);
+                  }
+                }
+              // Serial.print(LocoFN13to20[ActiveAddress], BIN);
+              // Serial.println(" LocoFN13to20[ActiveAddress] d ");
+              // Serial.print(LocoFN13to20[ActiveAddress], DEC);
+              // Serial.println(" LocoFN13to20[ActiveAddress]");
+              }
+              break;
+            case GRUPO_F2128:
+              if (nFun <= 8){
+                if (bitRead(locomotives[ActiveAddress].fn21to28, nFun) == 0 ) {
+                  bitWrite(locomotives[ActiveAddress].fn21to28, nFun, 1);
+                } else {
+                  if (bitRead(locomotives[ActiveAddress].fn21to28, nFun) == 1 ) {
+                    bitWrite(locomotives[ActiveAddress].fn21to28, nFun, 0);
+                  }
+                }
+              // Serial.print(LocoFN21to28[ActiveAddress], BIN);
+              // Serial.println(" LocoFN21to28[ActiveAddress] d ");
+              // Serial.print(LocoFN21to28[ActiveAddress], DEC);
+              // Serial.println(" LocoFN21to28[ActiveAddress]");
+              }
+              break;
+            case '#':   // Salida
+              PrintScreen = true;
+              mFunciones = !mFunciones;
+              fnGroup[ActiveAddress] = 0;
+              delay(150); // no afecta al bucle
+              break;
+        } // fin switch     
+        if (Oled::CreateFunctionCommand != ""){
+          Oled::SendCommand(Oled::CreateFunctionCommand((fnGroup[ActiveAddress])));
+          PrintScreen = true;
+          mFunciones = !mFunciones;
+          fnGroup[ActiveAddress] = 0;
+        } // fin Oled::CreateFunctionCommand
+      } // fin modo locomotora / funciones
+    } // fin if key 
+    
+    if (locDireccion != locomotives[ActiveAddress].direccion)
+    {
+      if (locomotives[ActiveAddress].direccion == 0) locomotives[ActiveAddress].direccion = 1;
+      else locomotives[ActiveAddress].direccion = 0;
+      Oled::SendCommand(Oled::CreateLocoCommand());
+      PrintScreen = true;
+    }
+    // if (positionSpeed != LocoSpeed[ActiveAddress])
+    if (positionSpeed != locomotives[ActiveAddress].velocidad)
+    {
+      PrintScreen = true;
+      // LocoSpeed[ActiveAddress] = positionSpeed;
+      locomotives[ActiveAddress].velocidad = positionSpeed;
+      Oled::SendCommand(Oled::CreateLocoCommand());
+      //Serial.println("Encoder: "); Serial.print(positionSpeed);
+    }
+  }
+  
+  void Oled::TurnoutOled()  // USE_KEYBOARD
+  { 
+    if (PrintScreen)
+    {
+      u8g2.clearBuffer(); // Limpia el buffer de la pantalla
+      Oled:printSerial();
+      u8g2.setFont(u8g2_font_7x13_tr); // Fuente 7x13
+      u8g2.setCursor(70,13); // 
+      u8g2.print(F("Desvios"));
+      u8g2.setCursor(5,30); // // line 2
+      u8g2.print(F("Id: "));
+      u8g2.print(idturnout);
+      if (!Testado[idturnout]) u8g2.print(F(" Desviado      "));
+      else u8g2.print(F(" Recto     ")); 
+      u8g2.setCursor(5, 48); // line 3
+      for (uint8_t z = 1; z < (sizeof(Testado)/2)+1; z++) u8g2.print(Testado[z]);
+      u8g2.setCursor(5, 60); // line 3
+      for (uint8_t z = (sizeof(Testado)/2)+1; z < sizeof(Testado); z++) u8g2.print(Testado[z]);
+      
+      if (mFunciones)
+      {                           
+        u8g2.setDrawColor(0); // color invertido
+        u8g2.drawBox(25, 18, 85, 40);
+        u8g2.setDrawColor(1); // Color normal
+        u8g2.drawRFrame(25, 18, 85, 40,6);
+        u8g2.setCursor(33, 35);
+        u8g2.print(F("Select ID: "));
+        u8g2.setCursor(50, 49);
+        for (uint8_t d = 0; d < 3; d++) 
+             if (nDigito[d] != nDigitoOld[d])
+             u8g2.print(nDigito[d]);
+      }
+      u8g2.sendBuffer();  // transfer internal memory to the display
+      PrintScreen = false;  
+    } // fin PrintScreen
+
+    char key = Keyboard::ReadKey();
+    if (key != 0)
+    {
+      bool validate = true;
+      switch (key) 
+      {
+        case '*': //
+          if (idturnoutold != 0)
+          {
+          if (idturnout != idturnoutold)
+          {
+            idturnout =  Oled::GetNumber(nDigito);
+            if (idturnout > sizeof(Testado))
+            {
+              serialIn = "Error";
+              Oled::printSerial();
+              validate = false;
+            } 
+            else 
+            {
+              idturnoutold = idturnout;
+            }
+          } 
+          if (validate)
+          {
+            if (idturnout == idturnoutold)
+            {
+              if (Testado[idturnout] != 0)Testado[idturnout] = 0; 
+              else Testado[idturnout] = 1;
+              Oled::SendCommand(Oled::CreateTurnoutCommand());
+            }
+          }
+          PrintScreen = true;  mFunciones = false;
+          }
+          break;
+        
+        case '#': // Salida
+          if (mFunciones) { 
+            mFunciones = false; PrintScreen = true; 
+            Oled::ClearNumbers();  
+          } else Oled::ExitPage();
+          break;
+        
+        default:
+          delay (100); // No afecta al bucle
+          nDigito[posDig] = key - 48;
+          PrintScreen = true; mFunciones = true;
+          idturnoutold = -1;
+          posDig = posDig + 1;
+          if (posDig == 3)posDig = 0;
+          break;
+      } // fin switch
+    } // fin if (key != 0)
+      // address is the primary address of the decoder controlling this turnout (0-511)
+      // subaddress is the subaddress of the decoder controlling this turnout (0-3)
+      // activate is either (0) (Deactivate, Straight, Closed) or (1) (Activate, Turn, Thrown)
+  }
+  
+  void Oled::AccesoryOled() // USE_KEYBOARD
+  {
+    if (PrintScreen)
+    {
+      u8g2.clearBuffer(); // Limpia el buffer de la pantalla
+      Oled:printSerial();
+      u8g2.setFont(u8g2_font_7x13_tr); // Fuente 7x13
+      u8g2.setCursor(75,13); // 
+      u8g2.print(F("Acces"));
+      u8g2.setCursor(5,30); // // line 2
+      u8g2.print(F("Addr: "));
+      u8g2.print(accAddr);
+      u8g2.print(F(" Sub: "));
+      u8g2.print(accSubAddr);
+      u8g2.setCursor(5, 50); // line 3
+      if (!accStatus) u8g2.print(F(" Encendido "));
+      else u8g2.print(F(" Apagado "));   
+      if (mFunciones)
+      {
+        u8g2.setDrawColor(0); // color invertido
+        u8g2.drawBox(25, 18, 85, 40);
+        u8g2.setDrawColor(1); // Color normal
+        u8g2.drawRFrame(20, 18, 95, 40,6);
+        u8g2.setCursor(28, 35);
+        if (!accSubScreen) u8g2.print(F("Select addr:"));
+        else u8g2.print(F("Select sub:"));
+        u8g2.setCursor(55, 49);
+        for (uint8_t d = 0; d < 3; d++) 
+        {
+          if (nDigito[d] != nDigitoOld[d]) u8g2.print(nDigito[d]);
+        }
+      }
+    u8g2.sendBuffer();  // transfer internal memory to the display
+    PrintScreen = false;  
+    } // fin PrintScreen
+  
+    char key = Keyboard::ReadKey();
+    if (key != 0) 
+    {
+      bool validate = true;
+      switch (key) 
+      {
+      case '*': //
+        if ((accAddr == accAddrOld) && (accSubAddr == accSubAddrOld) )
+        {
+          Oled::SendCommand(Oled::CreateAccesoryCommand());
+        } 
+        else 
+        {
+          if (!accSubScreen)
+          {
+            if (accAddrOld != 0)
+            {
+              if (accAddr != accAddrOld)
+              {
+                accAddr =  Oled::GetNumber(nDigito);
+                accAddrOld = accAddr;
+                accSubScreen = true;
+              }
+            }
+          } 
+          else 
+          {
+            Serial.print("sdir: "); Serial.println(accSubAddr);
+            if (accSubAddrOld != 0)
+            {
+              if (accSubAddr != accSubAddrOld)
+              {
+                accSubAddr =  Oled::GetNumber(nDigito);
+                accSubAddrOld = accSubAddr;
+                accSubScreen = false;
+              }
+              if (accStatus != 0) accStatus = 0; 
+              else accStatus = 1;
+            }  
+          }
+        }
+          PrintScreen = true;  mFunciones = false;
+        
+          break;
+        
+  
+      case '#': // Salida
+          if (mFunciones) { 
+            mFunciones = false; PrintScreen = true; 
+            Oled::ClearNumbers();  
+            Serial.println(F("Sale dialogo"));
+          } else Oled::ExitPage();
+          break;
+        
+        default:
+          //delay (100); // No afecta al bucle
+          nDigito[posDig] = key - 48;
+          PrintScreen = true; mFunciones = true;
+          accAddrOld = 255;
+          accSubAddrOld = 255;
+          posDig = posDig + 1;
+          if (posDig == 3) posDig = 0;
+          break;
+      } // fin switch
+    } // fin if (key != 0)
+      // address is the primary address of the decoder controlling this turnout (0-511)
+      // subaddress is the subaddress of the decoder controlling this turnout (0-3)
+      // activate is either (0) (Deactivate, Straight, Closed) or (1) (Activate, Turn, Thrown)
+  }
+  
+  void Oled::ExitPage() // USE_KEYBOARD
+  {
+    Oled::PrintScreen = true;
+    Oled::nMenu = -1;          
+    Oled::Menu_On_Off = false;
+  }
+  
+  uint8_t Oled::GetNumber(char num[]) // USE_KEYBOARD
+  {  // obtiene un número de 3 cifras
+    uint8_t number=num[0];              // desde un char array
+    for (uint8_t i=1;i<3;i++)
+    { 
+      if (nDigito[i] != nDigitoOld[i]) number = number*10+num[i];
+    }
+    Oled::ClearNumbers();
+    return number;
+  }
+  
+  void Oled::ClearNumbers() // USE_KEYBOARD
+  {
+    posDig = 0; // Primera posición del array
+    for (uint8_t i=1;i<3;i++)
+    {
+      nDigitoOld[i] = -1;
+      nDigito[i] = -1;
+    }   // todo en -1 para que no lo tome en cuenta
+  }
+  
+  String Oled::CreateLocoCommand()
+  {
+    String data = "t" + (String)(ActiveAddress + 1) + " " +
+                        (String)locomotives[ActiveAddress].direccionDCC + " " + 
+                        (String)locomotives[ActiveAddress].velocidad + " " + 
+                        (String)locomotives[ActiveAddress].direccion;
+    return data;
+  }
+
+  String Oled::CreateFunctionCommand(uint8_t grupo)
+  {
+    String sdata = "f ";
+    uint16_t fx = 0;
+    switch (grupo) 
+    {
+      case GRUPO_F04 :
+        Serial.print("LocoFN0to4: ");
+        Serial.println(locomotives[ActiveAddress].fn0to4);
+        fx = locomotives[ActiveAddress].fn0to4 + 128 ; 
+        sdata = sdata + (String)locomotives[ActiveAddress].direccionDCC + " " + fx;
+        break;
+      case GRUPO_F58:
+        fx = locomotives[ActiveAddress].fn5to8 + 176;
+        sdata = sdata + (String)locomotives[ActiveAddress].direccionDCC + " " + fx;
+        break;
+      case GRUPO_F0912:
+        fx = locomotives[ActiveAddress].fn9to12 + 160;
+        sdata = sdata + (String)locomotives[ActiveAddress].direccionDCC + " " + fx;
+        break;
+      case GRUPO_F1320:
+        fx = locomotives[ActiveAddress].fn13to20;
+        sdata = sdata + (String)locomotives[ActiveAddress].direccionDCC + " 222 " + fx;
+        // do 
+        break;
+      case GRUPO_F2128:
+        fx = locomotives[ActiveAddress].fn21to28;
+        sdata = sdata + (String)locomotives[ActiveAddress].direccionDCC + " 223 " + fx;
+        break;
+    }
+    Serial.print("create fun commands: "); Serial.println(sdata);
+    return sdata;
+  }
+
+  String Oled::CreateTurnoutCommand()
+  {
+    String data = "T" + (String)idturnout + " " +
+                        (String)Testado[idturnout] + ">";
+    return data;
+  }
+
+  String Oled::CreateAccesoryCommand()
+  {
+    String data = "a " + (String)(accAddr) + " " +
+                        (String)accSubAddr + " " + 
+                        (String)accStatus;
+    return data;
+  }
+
+  void Oled::SendCommand(String dataS)
+  {
+    char com[16];
+    dataS.toCharArray(com, 16);
+    TextCommand::parse(com);
+  }
 #endif  // USE_KEYBOARD
 
 
