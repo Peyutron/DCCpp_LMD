@@ -1,7 +1,7 @@
 /*
  * Project: <DCCpp LMD>
  * Author: <Carlos M.C>
- * Name: <DCCpp Animation>
+ * Name: <DCCpp Create turnouts>
  * GitHub: https://github.com/Peyutron/DCCpp_LMD
  * Description: Inicia la librería DCCppLMD con todos los seriales activados:
  * - Serial  - Comunicación USB
