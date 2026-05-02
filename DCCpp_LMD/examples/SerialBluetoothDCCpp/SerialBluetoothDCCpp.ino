@@ -1,17 +1,20 @@
-/*
- * Placa Arduino MEGA
- * Shield Ardumoto L298
- *
- * Inicia la librería DCCppLMD con todos los seriales activados:
- * - Serial  - Comunicación USB
- * -LMD V2.1.1 Los Serialx.begin() se inician el SerialWifi.cpp, SerialBluetooth.cpp y SerialAux.cpp
- *  - Serial1 - Comunicación Wifi
- *  - Serial2 - Comunicación Bluetooth
- *  - Serial3 - Comunicación Auxiliar
- *
- * Programa básico para librería DCC++ 
- * Para Activar/Desactivar los diferentes modulos vaya al archivo DCCpp.h 
- */
+/**
+  * project: <DCCpp LMD>
+  * author: <Carlos M.C>
+  * Name: <DCCpp Animation>
+  * GitHub: https://github.com/Peyutron/DCCpp_LMD
+  * 
+  * Description: Inicia la librería DCCppLMD con todos los seriales activados:
+  * - Serial  - Comunicación USB
+  * - LMD V2.1.1 Los Serialx.begin() se inician el SerialWifi.cpp, SerialBluetooth.cpp y SerialAux.cpp
+  *   Para Activar/Desactivar los diferentes modulos de comunicación vaya al archivo src/DCCpp.h.
+  *  - Serial1 -> USE_SERIALWIFI para Comunicación Wifi.
+  *  - Serial2 -> USE_SERIALBLUETOOTH para Comunicación Bluetooth.
+  *  - Serial3 -> USE_SERIALAUX para Comunicación Auxiliar.
+  * 
+  * Placa Arduino MEGA
+  * Shield Ardumoto L298
+  */
 
 #include "DCCpp.h"
 
