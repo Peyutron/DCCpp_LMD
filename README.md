@@ -52,8 +52,20 @@ Estos se pueden modificar en el archivo <em>Sound.cpp</em>
 TODO: Sensores RF433 nativo
 
 ### Registro de versiones:
+*-LMD 02/05/2026 V2.1.1
+  - Los Serialx.begin() se inician el SerialWifi.cpp, SerialBluetooth.cpp y SerialAux.cpp  
+  - Oled:
+    - Rediseño Oled pantalla de encendido
+    - Pantalla Overload como protección contra cortocircuito se restablece con <0> o <1> 
+    - Oled muestra el comando recibido
+  - CommInterface:
+    - Funciones getLastOutput(); y clearLastOutput();
+  - Wifi:
+    - Añadido IP personalizada.
+    - Puerto personalizado.
+  - TextCommand revisado para evitar conflicto entre los diferentes tipos de sensores.
 
-*-\22/02/2026 V2.1.0
+*-LMD 22/02/2026 V2.1.0
 - Conexión Wifi con ESP01 y NonOs para 4 clientes SerialWifi.h y SerialWifi.cpp
 _______________
 
