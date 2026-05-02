@@ -1,6 +1,11 @@
+/*
+ * Placa Arduino MEGA
+ * Shield Ardumoto L298
+ *
+ * Inicia la librería DCCppLMD con todos los seriales activados:
+ * - Serial  - Comunicación USB
 
-/*    
- * Programa básico para librería LMDCC++ 
+ * Programa básico para librería DCCpp LMD 
  * Para Activar/Desactivar los diferentes modulos vaya al archivo DCCpp.h 
  */
 
@@ -25,9 +30,8 @@ void setup()
   
   DCCpp::begin();
 
-  
   DCCpp::beginMainMotorShield(); // Inicia la vía principal motor Shield Ardumoto
-  DCCpp::beginProgMotorShield(); // Inicia la vía de programación  en motor Shield Ardumoto
+  DCCpp::beginProgMotorShield(); // Inicia la vía de programación en motor Shield Ardumoto
 
     T1.begin(storedata[1][0], storedata[1][1], storedata[1][2]);
     T2.begin(storedata[2][0], storedata[2][1], storedata[2][2]);
@@ -39,8 +43,6 @@ void setup()
     T8.begin(storedata[8][0], storedata[8][1], storedata[8][2]);
     T9.begin(storedata[9][0], storedata[9][1], storedata[9][2]);
     T10.begin(storedata[10][0], storedata[10][1], storedata[10][2]);
-
-  
 }
 
 void loop()
