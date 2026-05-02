@@ -1,11 +1,13 @@
 /*
+ * Project: <DCCpp LMD>
+ * Author: <Carlos M.C>
+ * Name: <DCCpp Animation>
+ * GitHub: https://github.com/Peyutron/DCCpp_LMD
+ * Description: Inicia la librería DCCppLMD con todos los seriales activados:
+ * - Serial  - Comunicación USB
  * Placa Arduino MEGA
  * Shield Ardumoto L298
- *
- * Inicia la librería DCCppLMD con todos los seriales activados:
- * - Serial  - Comunicación USB
-
- * Programa básico para librería DCCpp LMD 
+ * Programa básico para iniciar los desvíos sin usar la memoria EEPROM en la librería DCCpp LMD 
  * Para Activar/Desactivar los diferentes modulos vaya al archivo DCCpp.h 
  */
 
