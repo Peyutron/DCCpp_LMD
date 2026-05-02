@@ -1,8 +1,18 @@
-
-/*
- * Programa básico para librería DCCpp LMD con retromodulos S88
- * Para Activar/Desactivar los diferentes modulos vaya al archivo DCCpp.h 
- */
+/**
+  * project: <DCCpp LMD>
+  * author: <Carlos M.C>
+  * Name: <DCCpp Animation>
+  * GitHub: https://github.com/Peyutron/DCCpp_LMD
+  * Description: Programa básico para librería DCCpp LMD con retromodulos S88.
+  *   Para Activar/Desactivar los diferentes modulos vaya al archivo DCCpp.h 
+  *   y quite el comentario de la linea USE_S88
+  * 
+  * Board: Arduino MEGA
+  * Shield: Ardumoto L298P
+  *
+  * Inicia la librería DCCpp LMD con el serial USB activado:
+  * - Serial  - Comunicación USB
+  */
 
 #include "DCCpp.h"
 
@@ -24,7 +34,8 @@ void setup()
   digitalWrite(S88_Clock_PIN, LOW);
   digitalWrite(S88_Reset_PIN, LOW);
 #endif
-  
+
+  Serial.println(F("Cargando libreria DCCpp LMD..."));
   DCCpp::begin(); 
   DCCpp::beginMainMotorShield(); // Inicia la vía principal motor Shield Ardumoto
   DCCpp::beginProgMotorShield(); // Inicia la vía de programación  en motor Shield Ardumoto
