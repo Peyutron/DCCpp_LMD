@@ -298,7 +298,7 @@ ADVERTENCIA: si esta línea no está presente, se generarán algunos errores dur
 \page revPage Revision History
 
 
-\par 19/03/2026 V2.1.1
+\par 02/05/2026 V2.1.1
   - Los Serialx.begin() se inician el SerialWifi.cpp, SerialBluetooth.cpp y SerialAux.cpp  
   - Oled:
     - Rediseño Oled pantalla de encendido
