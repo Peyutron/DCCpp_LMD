@@ -112,14 +112,14 @@ void Oled::init()
   #else
     // OLED_ANIMATION
     u8g2.setFont(u8g2_font_ncenR14_te); // Fuente R14
-    u8g2.drawStr(43,15,"DCC++"); // write something to the internal memory
+    u8g2.drawStr(43,15,"DCCpp"); // write something to the internal memory
     u8g2.setCursor(10, 35);  
     u8g2.print(DCCPP_VERSION1);  // Oled.h
     u8g2.setCursor(50, 60);  
     u8g2.print(DCCPP_VERSION2);  // Oled.h
   #endif
   u8g2.sendBuffer();
-  // delay(1500);
+  delay(1000);
   #ifdef USE_SERIALWIFI
     u8g2.clearBuffer(); // Limpia el buffer de la pantalla
     u8g2.setCursor(15, 30);  
