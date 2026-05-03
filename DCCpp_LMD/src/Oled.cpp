@@ -6,9 +6,9 @@
 // web https://www.locoduino.org/spip.php?article286
 
 #ifdef USE_OLED // Evita cargar la librería si #define USE_OLED no esta activo en DCCpp.h 
+#include "DCCpp.h"
 #include "Config.h"
 //#include "Turnout.h"
-#include "DCCpp.h"
 //#include "CommInterface.h"
 #include <Arduino.h>
 #include <U8g2lib.h>
