@@ -2,6 +2,9 @@
 
 DCCpp LMD Librería DCC++ para Arduino
 
+<a href="https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/DCCpp-LMD-Oled-logo.png" alt="Display Oled cortocircuito central DCCpp LMD" target="_blank">
+	<img src="https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/DCCpp-LMD-Oled-logo.png" alt="Logo DCCpp LMD en Oled 128x64" title="Logo DCCpp LMD en Oled 128x64" height="200" width="200" align="right"></a>
+
 Que es y para que sirve DCCpp LMD?
 
 DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduino MEGA cuenta con diferentes añadidos como pantalla Oled, sonido y multiples puertos seriales. Con esta versión podemos utilizar todos los puertos al mismo tiempo para mandar o recibir los comandos de la central.
