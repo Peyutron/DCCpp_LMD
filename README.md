@@ -38,6 +38,7 @@ Para instalar la central DCCpp LMD solo hay que tener la librería DCCpp LMD en 
 Abrimos el IDE de Arduino y en <em>Ejemplos -> DCCpp-LMD -> SerialBluetoothDCCpp</em> para una comunicación serial básica.
 
 
+
 ![alt text](https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/ardumoto-l298p_pines.jpg?raw=true "Shield Ardumoto")
 
 
