@@ -56,6 +56,14 @@ Estos se pueden modificar en el archivo <em>Sound.cpp</em>
 TODO: Sensores RF433 nativo
 
 ### Registro de versiones:
+
+*-LMD 14/05/2026 V2.1.2
+  - Añadido comando <F> para funciones de locomotoras con formato "<F ID Nfun State>" en el 
+    archivo TextCommand.cpp con una nueva función en los archivos DCCpp.cpp y DCCpp.hpp
+  - setFunctionSimple(int cab, int funcNum, bool activate) Activa las funciones de locomotoras en formado ID (0-28)
+  - Correción de bug en TextCommand que impedía el uso de los comandos de programación y diagnostico, eliminadas variables de información.
+_______________
+
 *-LMD 02/05/2026 V2.1.1
   - Los Serialx.begin() se inician el SerialWifi.cpp, SerialBluetooth.cpp y SerialAux.cpp  
   - Oled:
