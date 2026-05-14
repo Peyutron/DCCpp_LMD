@@ -8,18 +8,20 @@
 //  Para que un módulo tenga efecto hay que quitar el comentario. 
 //  NOTA: Sensores y Salidas no son compatibles con los retromodulos S88
 //  
+// #define DCCPP_LIBRARY_VERSION   "VERSION DCCpp library: 1.4.2" // Base version
+#define DCCPP_LIBRARY_VERSION   "DCCpp LMD: 2.1.2"
 
 #define USE_TURNOUT           // Activa los desvíos.
 #define USE_EEPROM            // Activa la memoria EEPROM.
 #define USE_OUTPUT            // Activa salidas. No compatible con retromodulos S88.
 #define USE_SENSOR         // Activa sensores. No compatible con retromodulos S88.
 //#define USE_S88               // Activa compatibilidad con retromodulos S88.
-// #define USE_RF_SENSOR      // Acticva la lectura de sensores RF
+#define USE_RF_SENSOR      // Acticva la lectura de sensores RF
 // #define DCCPP_DEBUG_MODE   // Muestra información debug en pantalla.
 #define USE_TEXTCOMMAND       // Serial nativo.
-// #define USE_SERIALWIFI        // Serial1.
-// #define USE_SERIALBLUETOOTH // Serial2. 
-// #define USE_SERIALAUX      // Serial3.
+#define USE_SERIALWIFI        // Serial1.
+#define USE_SERIALBLUETOOTH // Serial2. 
+#define USE_SERIALAUX       // Serial3.
 #define USE_OLED              // Pantalla OLED 128x64 i2C.
 // #define USE_SOUND             // Buzzer sonidos varios.
 // #define USE_KEYBOARD          // Teclado y encoder.
@@ -298,6 +300,12 @@ ADVERTENCIA: si esta línea no está presente, se generarán algunos errores dur
 
 \page revPage Revision History
 
+\par 14/05/2026 V2.1.2
+  - Añadido comando <F> para funciones de locomotoras con formato "<F ID Nfun State>" en el 
+    archivo TextCommand.cpp con una nueva función en los archivos DCCpp.cpp y DCCpp.hpp
+  - setFunctionSimple(int cab, int funcNum, bool activate) Activa las funciones de locomotoras en formado ID (0-28)
+  - Correción de bug en TextCommand que impedía el uso de los comandos de programación y diagnostico, eliminadas variables de información.
+_______________
 
 \par 02/05/2026 V2.1.1
   - Los Serialx.begin() se inician el SerialWifi.cpp, SerialBluetooth.cpp y SerialAux.cpp  
@@ -311,7 +319,6 @@ ADVERTENCIA: si esta línea no está presente, se generarán algunos errores dur
     - Añadido IP personalizada.
     - Puerto personalizado.
   - TextCommand revisado para evitar conflicto entre los diferentes tipos de sensores.
-
 _______________
 
 \par 22/02/2026 V2.1.0
@@ -533,9 +540,6 @@ _______________
 /** @file DCCpp.h
 Main include file of the library.*/
 
-// #define DCCPP_LIBRARY_VERSION   "VERSION DCCpp library: 1.4.2"
-#define DCCPP_LIBRARY_VERSION   "DCCpp LMD: 2.1.1"
-
 #ifdef VISUALSTUDIO
 #pragma warning (disable : 4005)
 #endif
@@ -581,9 +585,9 @@ Main include file of the library.*/
     /**Comment this line to avoid using and compiling EEPROM saving.*/
     #define USE_EEPROM
     /**Comment this line to avoid using and compiling Outputs.*/
-    // #define USE_OUTPUT
+    #define USE_OUTPUT
     /**Comment this line to avoid using and compiling Sensors.*/
-    // #define USE_SENSOR
+    #define USE_SENSOR
     /**Comment this line to avoid using and compiling S88.*/
     #define USE_S88
 		/**Comment this line to avoid using and compiling Serial commands.*/

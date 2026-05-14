@@ -6,6 +6,7 @@
 #include "DCCpp.h"
 
 /**
+ * New functions for cab functions by Carlos MC.
 This is a class to handle decoder functions.
 An instance of this class handle the status of the functions of one decoder.
 A function can be active or not. 
@@ -279,6 +280,14 @@ class DCCpp
 		*/
 		static inline void writeCvMain(int inCvId, byte inValue, int callBack = 100, int callBackSub = 200) { writeCv(&(mainRegs), inCvId, inValue, callBack, callBackSub); }
 
+		// Set the functions states of the given decoder on the main track. <F> command
+		/** Initializes the main track.
+		@param cab Register number. DCCpp Can use any register to be able to send function packets repeatedly like the speed packets, 
+		@param funcNum	Number of function.
+		@param activate	1 = On | 0 = Off
+		*/
+		static void setFunctionSimple(int cab, int funcNum, bool activate);		
+
 		/** Set the functions states of the given decoder on the main track.
 		@param nReg	Register number. Original DCC++ use register 0 to send function states only a few times. DCCpp Can use any register to be able to send function packets repeatedly like the speed packets, 
 		@param inLocoId	Decoder address in short or long format.
@@ -287,7 +296,6 @@ class DCCpp
 		static inline void setFunctionsMain(int nReg, int inLocoId, FunctionsState &inStates) { setFunctions(&(mainRegs), nReg, inLocoId, inStates); }
 
 		// Programming track functions
-
 		/** For the given decoder id, set the speed and the direction on the programming track.
 		@param nReg	Register number. Avoid register 0, used for one shot commands like accessories or CV programming.
 		@param inLocoId	Decoder address in short or long format.

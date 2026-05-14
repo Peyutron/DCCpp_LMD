@@ -23,6 +23,28 @@ bool DCCpp::IsPowerOnMain = false;
 bool DCCpp::IsPowerOnProg = false;
 byte DCCpp::ackThreshold = 0;
 
+struct LocoState {
+    int address;
+    bool functions[29]; // 0..28
+    bool valid;
+};
+LocoState locoStates[MAX_MAIN_REGISTERS];
+int numLocos = 0;
+
+// Función para obtener el estado de una locomotora (crea uno si no existe)
+LocoState* getLocoState(int cab) {
+    for (int i = 0; i < numLocos; i++) {
+        if (locoStates[i].address == cab) return &locoStates[i];
+    }
+    if (numLocos < MAX_MAIN_REGISTERS) {
+        locoStates[numLocos].address = cab;
+        memset(locoStates[numLocos].functions, 0, sizeof(bool)*29);
+        locoStates[numLocos].valid = true;
+        return &locoStates[numLocos++];
+    }
+    return nullptr;
+}
+
 // *********************************************************** FunctionsState
 
 FunctionsState::FunctionsState()
@@ -281,7 +303,6 @@ void DCCpp::begin()
 	//pinMode(LED_BUILTIN, OUTPUT);
 	CommManager::printf("begin achieved");
 #endif
-
 } // begin
 
 #ifdef USE_ETHERNET
@@ -456,8 +477,8 @@ void DCCpp::panicStop(bool inStop)
 
 #ifdef DCCPP_DEBUG_MODE
 	CommManager::printf(F("PanicStop "));
-	Serial.print(F("DCCpp PanicStop "));
-	Serial.println(inStop ? F("pressed"):F("canceled"));
+	//Serial.print(F("DCCpp PanicStop "));
+	CommManager::printf(inStop ? F("pressed"):F("canceled"));
 #endif
 
 	/* activate or not the power on rails */
@@ -683,6 +704,60 @@ void DCCpp::setFunctions(volatile RegisterList *inpRegs, int nReg, int inLocoId,
 #endif
 }
 
+void DCCpp::setFunctionSimple(int cab, int funcNum, bool activate) {
+    if (funcNum < 0 || funcNum > 28) return;
+    LocoState* state = getLocoState(cab);
+    if (!state) return;
+    // Actualizar el estado
+    state->functions[funcNum] = activate;
+    
+    byte b1;
+    int b2 = -1;
+    
+    if (funcNum <= 4) {
+        // Reconstruir b1 para F0-F4 según estado actual
+        b1 = 128;
+        if (state->functions[0]) b1 |= 16;
+        if (state->functions[1]) b1 |= 1;
+        if (state->functions[2]) b1 |= 2;
+        if (state->functions[3]) b1 |= 4;
+        if (state->functions[4]) b1 |= 8;
+        b2 = -1;
+    }
+    else if (funcNum <= 8) {
+        b1 = 176;
+        for (int i = 5; i <= 8; i++) {
+            if (state->functions[i]) b1 |= (1 << (i-5));
+        }
+        b2 = -1;
+    }
+    else if (funcNum <= 12) {
+        b1 = 160;
+        for (int i = 9; i <= 12; i++) {
+            if (state->functions[i]) b1 |= (1 << (i-9));
+        }
+        b2 = -1;
+    }
+    else if (funcNum <= 20) {
+        b1 = 222;
+        b2 = 0;
+        for (int i = 13; i <= 20; i++) {
+            if (state->functions[i]) b2 |= (1 << (i-13));
+        }
+    }
+    else { // 21..28
+        b1 = 223;
+        b2 = 0;
+        for (int i = 21; i <= 28; i++) {
+            if (state->functions[i]) b2 |= (1 << (i-21));
+        }
+    }
+    
+    mainRegs.setFunction(0, cab, b1, b2);
+}
+
+
+
 int DCCpp::identifyLocoId(volatile RegisterList *inReg)
 {
 	int  id = -1;
@@ -748,5 +823,7 @@ void DCCpp::CheckPowerConnectionsWithLeds(uint8_t aDirPin, unsigned int inDelay)
 	delay(inDelay);
 }
 #endif
+
+
 
 

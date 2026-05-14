@@ -24,9 +24,7 @@ extern unsigned int __heap_start;
 extern void *__brkval;
 #endif
 
-
-String info_vers;	// Para CommInterface en comando 's'
-String info_serial;	// Para CommInterface en comando 's'
+char serialInUse[3][4] = {"X", "X", "X"}; // Para CommInterface en comando 's'
 int nElemento[4] = {0, 0, 0}; 	// Para CommInterface en comando 'E'
 int v = 0;						// Para CommInterface en comando 'F'
 int memoria = 0;				// Para CommInterface en comando 'F'
@@ -64,7 +62,7 @@ void TextCommand::process(){
 			else if (c == '>'){               // end of new command
 				if (parse(commandString) == false){
 					#if defined(DCCPP_DEBUG_MODE)
-						Serial.println("invalid command !");
+						CommManager::printf("invalid command !");
 					#endif
 				}
 			}
@@ -96,55 +94,56 @@ void TextCommand::process(){
 bool TextCommand::parse(char *com)
 {
 
-#ifdef DCCPP_DEBUG_MODE
-	Serial.print(com[0]);
-	Serial.println(F(" command"));
-#ifdef VISUALSTUDIO
-	std::cout << com <<  " command received" << std::endl; 
-#endif
-#endif
+	#ifdef DCCPP_DEBUG_MODE
+		Serial.print(com[0]);
+		Serial.println(F(" command"));
+		#ifdef VISUALSTUDIO
+			std::cout << com <<  " command received" << std::endl; 
+		#endif
+	#endif
 
-#ifdef USE_OLED
-		// Serial.println(F(" command"));
-	if (com[0] != 'c') Oled::Monitor(com);    // OLED para que no muestre el consumo con cada consulta
-#endif
+	#ifdef USE_OLED
+		// OLED para que no muestre el consumo con cada consulta
+		if (com[0] != 'c') Oled::Monitor(com);
+	#endif
 
-switch(com[0]){
+	switch(com[0])
+	{
 
-#ifdef USE_S88      // decode XBPC command
-    case 'Q':       // <Q>
-    com[1] = ' ';
-    com[2] = '6';
-    com[3] = '4';
-    com[4] = ' ';
-    com[5] = '3';
-    com[6] = '\0';
-
-    //return true; // NUEVA LINEA 
-
-    case 'Y': // <Y Nb_S88_Modules DataFormat> para inicialización o <Y> para feedback de ocupación
-		/**	\addtogroup commandsGroup
-			COMANDO PARA SISTEMA DE OCUPACIÓN S88
-
-		<b>
-    	\verbatim 
-  		<Y Nb_S88_Bytes DataFormat>: sets Nb_S88_Modules read with output DataFormat
- 		<Y>                          proporciona feedback de ocupación 
-		\endverbatim
-		</b>
-    	
-    	*** CONSULTE S88.CPP PARA OBTENER INFORMACIÓN COMPLETA SOBRE LAS DIFERENTES VARIACIONES DEL COMANDO "Y"
-    	used to define S88 retrosignalisation definitions
-
-    	- <b>Nb_S88_Bytes</b>: the byte number (0-64) to read
-    	- <b>DataFormat</b>: 0 (Binary) 1 (Hexadecimal)
- 
-    	returns: <b>\<o status\>, then \<y S88_Bytes\> or \<q/Q n\></b>
-    	*/
-      // DCCPP_INTERFACE.print("\n<y 00000000>"); or DCCPP_INTERFACE.print("\n<y 00>");
-      S88::parse(com +1); // NUEVA LINEA 
-      return true;
-#endif
+		#ifdef USE_S88      // decode XBPC command
+		    case 'Q':       // <Q>
+		    com[1] = ' ';
+		    com[2] = '6';
+		    com[3] = '4';
+		    com[4] = ' ';
+		    com[5] = '3';
+		    com[6] = '\0';
+		
+		    //return true; // NUEVA LINEA 
+		
+		    case 'Y': // <Y Nb_S88_Modules DataFormat> para inicialización o <Y> para feedback de ocupación
+				/**	\addtogroup commandsGroup
+					COMANDO PARA SISTEMA DE OCUPACIÓN S88
+		
+				<b>
+		    	\verbatim 
+		  		<Y Nb_S88_Bytes DataFormat>: sets Nb_S88_Modules read with output DataFormat
+		 		<Y>                          proporciona feedback de ocupación 
+				\endverbatim
+				</b>
+		    	
+		    	*** CONSULTE S88.CPP PARA OBTENER INFORMACIÓN COMPLETA SOBRE LAS DIFERENTES VARIACIONES DEL COMANDO "Y"
+		    	used to define S88 retrosignalisation definitions
+		
+		    	- <b>Nb_S88_Bytes</b>: the byte number (0-64) to read
+		    	- <b>DataFormat</b>: 0 (Binary) 1 (Hexadecimal)
+		 
+		    	returns: <b>\<o status\>, then \<y S88_Bytes\> or \<q/Q n\></b>
+		    	*/
+		      // DCCPP_INTERFACE.print("\n<y 00000000>"); or DCCPP_INTERFACE.print("\n<y 00>");
+		      S88::parse(com +1); // NUEVA LINEA 
+		      return true;
+		#endif
 
 
 	case 't':
@@ -158,22 +157,24 @@ switch(com[0]){
 		\endverbatim
 		</b>
 	
-	   sets the throttle for a given register/cab combination 
+	   	sets the throttle for a given register/cab combination 
 	   
-	   - <b>REGISTE%R</b>: an internal register number, from 1 through MAX_MAIN_REGISTERS (inclusive), to store the DCC packet used to control this throttle setting
-	   - <b>CAB</b>:  the short (1-127) or long (128-10293) address of the engine decoder
-	   - <b>SPEED</b>: throttle speed from 0-126, or -1 for emergency stop (resets SPEED to 0)
-	   - <b>DIRECTION</b>: 1=forward, 0=reverse.  Setting direction when speed=0 or speed=-1 only effects directionality of cab lighting for a stopped train
+	   	- <b>REGISTE%R</b>: an internal register number, from 1 through MAX_MAIN_REGISTERS (inclusive), 
+	   		to store the DCC packet used to control this throttle setting
+	   	- <b>CAB</b>:  the short (1-127) or long (128-10293) address of the engine decoder
+	   	- <b>SPEED</b>: throttle speed from 0-126, or -1 for emergency stop (resets SPEED to 0)
+	   	- <b>DIRECTION</b>: 1=forward, 0=reverse.  Setting direction when speed=0( or speed=-1 only 
+	   		effects directionality of cab lighting for a stopped train
+	   	   
+	   	   returns: <b>\<T REGISTE%R SPEED DIRECTION\></b>
+	   	   */
 	   
-	   returns: <b>\<T REGISTE%R SPEED DIRECTION\></b>
-	   */
-
-	 	DCCpp::mainRegs.setThrottle(com+1);
-		return true;
-
+	   	 	DCCpp::mainRegs.setThrottle(com+1);
+	   		return true;
+	   
 	case 'f':
-		/**	\addtogroup commandsGroup
-		FUNCIONES DEL DECODIFICADOR DE OPERACIÓN DE LA MAQUINA F0-F28
+	   	/**	\addtogroup commandsGroup
+	   	FUNCIONES DEL DECODIFICADOR DE OPERACIÓN DE LA MAQUINA F0-F28 (f)
 		---------------------------------------
 		
 		<b>
@@ -185,7 +186,7 @@ switch(com[0]){
 		\endverbatim
 		</b>
 
-		turns on and off engine decoder functions F0-F28 (F0 is sometimes called FL)  
+		Turns on and off engine decoder functions F0-F28 (F0 is sometimes called FL)  
 		NOTE: setting requests transmitted directly to mobile engine decoder --- current state of engine functions is not stored by this program
    
 		- <b>REGISTE%R</b>: an internal register number, from 1 through MAX_MAIN_REGISTERS (inclusive), to store the DCC packet used to control these functions. REGISTER is only used if the first argument is -1.
@@ -220,6 +221,41 @@ switch(com[0]){
 		*/
 
 		DCCpp::mainRegs.setFunction(com+1);
+	  	return true;
+
+	case 'F':
+		/**	\addtogroup commandsGroup
+		FUNCIONES DEL DECODIFICADOR DE OPERACIÓN DE LA MAQUINA F0-F28
+		---------------------------------------
+		
+		<b>
+		\verbatim
+		<F CAB NFUN STATE>
+		\endverbatim
+		\verbatim
+		<F CAB NFUN STATE>
+		\endverbatim
+		</b>
+
+		turns on and off engine decoder functions F0-F28 (F0 is sometimes called FL)  
+		NOTE: setting requests transmitted directly to mobile engine decoder --- 
+		current state of engine functions is not stored by this program
+   
+		- <b>CAB</b>:  the short (1-127) or long (128-10293) address of the engine decoder
+   
+		To set functions F0-F28 on (=1) or off (=0):
+     
+		- <b>Nfun</b>: Number between 0 and 28 
+		- <b>State</b>: 1 = on | 0 = off
+  
+		returns: NONE
+		*/
+
+		int cab, funcNum, state;
+    	if (sscanf(com+1, "%d %d %d", &cab, &funcNum, &state) == 3) 
+    	{
+        	DCCpp::setFunctionSimple(cab, funcNum, state == 1);
+    	}
 	  	return true;
 
 	case 'a':
@@ -265,118 +301,155 @@ switch(com[0]){
     	CommManager::printf("<# %d>\n", MAX_MAIN_REGISTERS);
         return true;
 
-#ifdef USE_TURNOUT
-	case 'T':
-	/*
-	* *** VER TURNOUT.CPP PARA INFORMACIÓN COMPLETA SOBRE LAS DIFERENTES VARIACIONES DEL COMANDO "T"
-	* UTILIZADO PARA CREAR/EDITAR/ELIMINAR/MOSTRAR DEFINICIONES DE DESVIOS
-	*/
+	#ifdef USE_TURNOUT
+		case 'T':
+			/*
+			 * ** VER TURNOUT.CPP PARA INFORMACIÓN COMPLETA SOBRE LAS VARIACIONES DEL COMANDO "T"
+			*     UTILIZADO PARA CREAR/EDITAR/ELIMINAR/MOSTRAR DEFINICIONES DE DESVIOS
+			*/
+			return Turnout::parse(com+1);
+	#endif
 
-		return Turnout::parse(com+1);
-#endif
+	#ifdef USE_OUTPUT
+	
+		case 'Z':
+			/*
+			 * ** SEE OUTPUT.CPP FOR COMPLETE INFO ON THE DIFFERENT VARIATIONS OF THE "Z" COMMAND
+		 	 *    USED TO CREATE / EDIT / REMOVE / SHOW OUTPUT DEFINITIONS
+		 	*/
+			return Output::parse(com+1);
+	#endif
 
-#ifdef USE_OUTPUT
-
-	case 'Z':
-	/*
-	 *   *** SEE OUTPUT.CPP FOR COMPLETE INFO ON THE DIFFERENT VARIATIONS OF THE "Z" COMMAND
-	 *   USED TO CREATE / EDIT / REMOVE / SHOW OUTPUT DEFINITIONS
-	 */
-		return Output::parse(com+1);
-#endif
-
-#ifdef USE_SENSOR
-	  
-	case 'S': 
-	/*   
-	 *   *** SEE SENSOR.CPP FOR COMPLETE INFO ON THE DIFFERENT VARIATIONS OF THE "S" COMMAND
-	 *   USED TO CREATE/EDIT/REMOVE/SHOW SENSOR DEFINITIONS
-	 */
-	return Sensor::parse(com+1);	  
-
-
-
-	#ifdef DCCPP_PRINT_DCCPP
-		case 'Q':
-		/**	\addtogroup commandsGroup
-		SHOW STATUS OF ALL SENSORS
-		--------------------------
-
-		<b>
-		\verbatim
-		<Q>
-		\endverbatim
-		</b>
-
-		returns: the status of each sensor ID in the form <b>\<Q ID\></b> (active) or <b>\<q ID\></b> (not active)
-		*/
-			#ifdef USE_RF_SENSOR
-				uint16_t Q;
-				sscanf(com+1,"%d", &Q);
-				// Serial.print(F("data: "));
-				// Serial.println(Q);
-				CommManager::printf("<Q%d>", Q);
+	#ifdef USE_SENSOR
+		case 'S': 
+			/*   
+		 	* ** SEE SENSOR.CPP FOR COMPLETE INFO ON THE DIFFERENT VARIATIONS OF THE "S" COMMAND
+		 	*   USED TO CREATE/EDIT/REMOVE/SHOW SENSOR DEFINITIONS
+		 	*/
+			return Sensor::parse(com+1);	  
+		#ifdef DCCPP_PRINT_DCCPP
+			case 'Q':
+				/**	\addtogroup commandsGroup
+				SHOW STATUS OF ALL SENSORS
+				--------------------------
+		
+				<b>
+				\verbatim
+				<Q>
+				\endverbatim
+				</b>
+		
+				returns: the status of each sensor ID in the form <b>\<Q ID\></b> (active) or <b>\<q ID\></b> (not active)
+				*/
+				#ifdef USE_RF_SENSOR
+					uint16_t Q;
+					sscanf(com+1,"%d", &Q);
+					// Serial.print(F("data: "));
+					// Serial.println(Q);
+					CommManager::printf("<Q%d>", Q);
+					return true;
+				#endif
+				Sensor::status();
 				return true;
+			#ifdef USE_RF_SENSOR
+				case 'q':
+					/**	\addtogroup commandsGroup
+					Repeat the same command q
+					--------------------------
+					USE_SENSOR and USE_S88 is off
+		
+					<b>
+					\verbatim
+					<q Nsensor>
+					\endverbatim
+					</b>
+					returns: the status of each sensor ID in the form  <b>\<q ID\></b> (not active)
+					*/
+					uint16_t q;
+					sscanf(com+1,"%d", &q);
+					// Serial.print(F("data: "));
+					// Serial.println(q);
+					CommManager::printf("<q%d>", q);
+					return true;
+			#endif // USE_RF_SENSOR
+		#endif	// DCCPP_PRINT_DCCPP
+	#endif	// USE_SENSOR
+
+	#ifdef USE_EEPROM
+		case 'E':
+			/**	\addtogroup commandsGroup
+			ALMACENA CONFIGURACION EL LA MEMORIA EEPROM
+			------------------------
+	
+			<b>
+			\verbatim
+			<E>
+			\endverbatim
+			</b>
+	
+			Stores settings for turnouts and sensors EEPROM
+			Almacena la configuración de desvíos y sensores en la memoria EEPROM
+	    
+			returns: <b>\<e nTurnouts nSensors\></b>
+			*/
+		 
+			EEStore::store();
+	
+			#ifdef USE_TURNOUT
+				nElemento[0] = EEStore::data.nTurnouts;
 			#endif
-	 		Sensor::status();
+			#ifdef USE_SENSOR
+				nElemento[1] = EEStore::data.nSensors;
+			#endif
+			#ifdef USE_OUTPUT
+				nElemento[2] = EEStore::data.nOutputs;
+			#endif
+	
+			CommManager::printf("<e%d %d %d>", nElemento[0], nElemento[1], nElemento[2]);
+	
 			return true;
-	#endif	// DCCPP_PRINT_DCCPP
-#endif	// USE_SENSOR
+	
+		case 'e':
+			/**	\addtogroup commandsGroup
+			CLEAR SETTINGS IN EEPROM
+			------------------------
+	
+			<b>
+			\verbatim
+			<e>
+			\endverbatim
+			</b>
+			
+			Limpia la memoria EEPROM
+			
+	    
+			returns: <b>\<O></b>
+			*/
+			EEStore::clear();
+			CommManager::printf("<O>");
+			return true;
+	#endif
 
-#ifdef USE_EEPROM
-	case 'E':
-		/**	\addtogroup commandsGroup
-		ALMACENA CONFIGURACION EL LA MEMORIA EEPROM
-		------------------------
-
-		<b>
-		\verbatim
-		<E>
-		\endverbatim
-		</b>
-
-		Stores settings for turnouts and sensors EEPROM
-    
-		returns: <b>\<e nTurnouts nSensors\></b>
-		*/
-	 
-		EEStore::store();
-
-		#ifdef USE_TURNOUT
-			nElemento[0] = EEStore::data.nTurnouts;
-		#endif
-		#ifdef USE_SENSOR
-			nElemento[1] = EEStore::data.nSensors;
-		#endif
-		#ifdef USE_OUTPUT
-			nElemento[2] = EEStore::data.nOutputs;
-		#endif
-
-		CommManager::printf("<e%d %d %d>", nElemento[0], nElemento[1], nElemento[2]);
-
-		return true;
-
-	case 'e':
-		/**	\addtogroup commandsGroup
-		CLEAR SETTINGS IN EEPROM
-		------------------------
-
-		<b>
-		\verbatim
-		<e>
-		\endverbatim
-		</b>
-		
-		Limpia la memoria EEPROM
-		
-    
-		returns: <b>\<O></b>
-		*/
-		EEStore::clear();
-		CommManager::printf("<O>");
-
-		return true;
-#endif
+	#ifdef USE_SERIALWIFI
+		case 'I':
+			/**	\addtogroup commandsGroup
+			GET IP FROM NONOS ESP01
+			-----------------------------------------
+	
+			<b>
+			\verbatim
+			<I>
+			\endverbatim
+			</b>
+	
+			Send command AT+CIFSR\r\n 
+	    
+			returns: <b>IP:xxx.xxx.xxx.xxx</b>
+			*/   
+	
+			Wifi::getWifiIP();
+			return true;
+	#endif
 
 	case '1':
 		/**	\addtogroup commandsGroup
@@ -418,6 +491,7 @@ switch(com[0]){
 		return true;
 
 	case 's':
+
 		if (digitalRead(DCCppConfig::SignalEnablePinProg) == LOW) // could check either PROG or MAIN
       		CommManager::printf("<p0>");
     	else CommManager::printf("<p1>");
@@ -436,7 +510,6 @@ switch(com[0]){
 				CommManager::printf("<T%d %d 0>", i, - DCCpp::mainRegs.speedTable[i]);
 			} 
 		}
-		char serialInUse[3][4] = {"X", "X", "X"}; // Para CommInterface en comando 's'
 		#ifdef USE_SERIALWIFI
 			strcpy(serialInUse[0], "Wifi");
 		#endif
@@ -445,24 +518,10 @@ switch(com[0]){
 		#endif
 		#ifdef USE_SERIALAUX
 			strcpy(serialInUse[2], "AUX");
-			// serialInUse[2] = "aux";
 		#endif
-			Serial.println(serialInUse[2]);
 			CommManager::printf("<iDCCpp-LMD LIBRARY BASE STATION FOR ARDUINO V-%s", DCCPP_LIBRARY_VERSION );
 			CommManager::printf("<N Wifi: %s Bluetooth: %s Aux: %s>", serialInUse[0], serialInUse[1], serialInUse[2]);
-	
-		#ifdef USE_SERIALWIFI
-			WIFI.println(info_vers);
-			WIFI.println(info_serial);
-		#endif
-		#ifdef USE_SERIALBLUETOOTH
-			BLUETOOTH.println(info_vers);
-			BLUETOOTH.println(info_serial);
-		#endif
-		#ifdef USE_SERIALAUX
-			SERIALAUX.println(info_vers);
-			SERIALAUX.println(info_serial);
-		#endif
+
 		#ifdef DCCPP_PRINT_DCCPP
 		#ifdef USE_TURNOUT
 	  		Turnout::show();
@@ -475,52 +534,7 @@ switch(com[0]){
 		#endif
 		#endif  //end USE_SERIALAUX
 		return true;
-
-#ifdef USE_RF_SENSOR
-	// case 'Q':
-		/**	\addtogroup commandsGroup
-		Repeat the same command Q
-		--------------------------
-		USE_SENSOR and USE_S88 is off
-
-		<b>
-		\verbatim
-		<Q Nsensor>
-		\endverbatim
-		</b>
-
-		returns: the status of each sensor ID in the form <b>\<Q ID\></b> (active)
-		*/
-		/*
-		uint16_t Q;
-		sscanf(com+1,"%d", &Q);
-		// Serial.print(F("data: "));
-		// Serial.println(Q);
-		CommManager::printf("<Q%d>", Q);
-		return true;
-		*/
-	case 'q':
-		/**	\addtogroup commandsGroup
-		 Repeat the same command q
-		 --------------------------
-		 USE_SENSOR and USE_S88 is off
-
-		 <b>
-		 \verbatim
-		 <q Nsensor>
-		 \endverbatim
-		 </b>
-
-		 returns: the status of each sensor ID in the form  <b>\<q ID\></b> (not active)
-		*/
-		uint16_t q;
-		sscanf(com+1,"%d", &q);
-		// Serial.print(F("data: "));
-		// Serial.println(q);
-		CommManager::printf("<q%d>", q);
-		return true;
-#endif
-		
+	
 	case 'w':
 		
 		/**	\addtogroup commandsGroup
@@ -689,26 +703,7 @@ switch(com[0]){
 		CommManager::printf("<a%d>", int(DCCpp::getCurrentMain()));
 		return true;
 
-#ifdef USE_SERIALWIFI
-	case 'I':
-		/**	\addtogroup commandsGroup
-		GET IP FROM NONOS ESP01
-		-----------------------------------------
 
-		<b>
-		\verbatim
-		<I>
-		\endverbatim
-		</b>
-
-		Send command AT+CIFSR\r\n 
-    
-		returns: <b>IP:xxx.xxx.xxx.xxx</b>
-		*/   
-
-		Wifi::getWifiIP();
-		return true;
-#endif
 
 	case ' ':
 		/**	\addtogroup commandsGroup
@@ -726,13 +721,13 @@ switch(com[0]){
 		returns: a carriage return
 		*/
 
-	  DCCPP_INTERFACE.println("");
+	  CommManager::printf("");
 		return true;
 
-///          
-/// THE FOLLOWING COMMANDS ARE NOT NEEDED FOR NORMAL OPERATIONS AND ARE ONLY USED FOR TESTING AND DEBUGGING PURPOSES
-/// PLEASE SEE SPECIFIC WARNINGS IN EACH COMMAND BELOW
-///
+	///          
+	/// THE FOLLOWING COMMANDS ARE NOT NEEDED FOR NORMAL OPERATIONS AND ARE ONLY USED FOR TESTING AND DEBUGGING PURPOSES
+	/// PLEASE SEE SPECIFIC WARNINGS IN EACH COMMAND BELOW
+	///
 	case 'D':
 		/**	\addtogroup commandsGroup
 		ENTER DIAGNOSTIC MODE
@@ -748,7 +743,6 @@ switch(com[0]){
 		SERIAL COMMUNICATION WILL BE INTERUPTED ONCE THIS COMMAND IS ISSUED - MUST RESET BOARD OR RE-OPEN SERIAL WINDOW TO RE-ESTABLISH COMMS
 		*/
 		CommManager::printf("Entering Diagnostic Mode...");
-		// Serial.println("\nEntering Diagnostic Mode...");
 		delay(1000);
 
 		DCCpp::setDebugDccMode();
@@ -848,16 +842,15 @@ switch(com[0]){
 	  DCCPP_INTERFACE.println("");
 		return true;
 	
-	case 'F':
+	case 'G':
 				
-
 	  	#ifdef ARDUINO_ARCH_AVR
-	  			memoria = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
- 				CommManager::printf("<f%d>", memoria);
- 			#endif
- 			#ifdef USE_OLED
+	  		memoria = (int) &v - (__brkval == 0 ? (int) &__heap_start : (int) __brkval);
+ 			CommManager::printf("<f%d>", memoria);
+ 		#endif
+ 		#ifdef USE_OLED
 			Oled::printSram(memoria);
-			#endif 
+		#endif 
 
 		//v++;			// not used. This line is just here to avoid a warning by the compiler !
 		return true;
