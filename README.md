@@ -7,7 +7,9 @@ DCCpp LMD Librería DCC++ para Arduino
 
 Que es y para que sirve DCCpp LMD?
 
-DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduino MEGA cuenta con diferentes añadidos como pantalla Oled, sonido y multiples puertos seriales. Con esta versión podemos utilizar todos los puertos al mismo tiempo para mandar o recibir los comandos de la central.
+DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduino MEGA cuenta con diferentes añadidos como pantalla Oled, sonido y multiples puertos seriales. 
+
+Con esta versión podemos utilizar todos los puertos al mismo tiempo para mandar o recibir los comandos de la central.
 
 
 
@@ -32,7 +34,8 @@ DCCpp LMD es una adapatación de la librería DCCpp. Diseñada para placa Arduin
 En la pantalla Oled obtendremos información tales como desvíos y sensores almacenados en la EEPROM, comando recibido, estado del ultimo desvío/salida activadas. También muestra los datos de la última locomotora como ID, velocidad y dirección. Igualmente, cuando almacenemos o borremos algun elemento de la memoria EEPROM
 
 Para instalar la central DCCpp LMD solo hay que tener la librería DCCpp LMD en la carpeta <em>libraries</em> de Arduino.
-Abrimos el IDE de Arduino y en <em>Ejemplos -> DCCppLMD -> SerialBluetoothDCCpp</em>
+
+Abrimos el IDE de Arduino y en <em>Ejemplos -> DCCpp-LMD -> SerialBluetoothDCCpp</em> para una comunicación serial básica.
 
 
 ![alt text](https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/ardumoto-l298p_pines.jpg?raw=true "Shield Ardumoto")
