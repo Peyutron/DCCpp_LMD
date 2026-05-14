@@ -122,11 +122,11 @@ void Oled::init()
   delay(1000);
   #ifdef USE_SERIALWIFI
     u8g2.clearBuffer(); // Limpia el buffer de la pantalla
-    u8g2.setCursor(15, 30);  
+    u8g2.setCursor(15, 20);  
     u8g2.print("Conectando");  // Oled.h
-    u8g2.setCursor(15, 48);  
+    u8g2.setCursor(15, 40);  
     u8g2.print("Wifi");  // Oled.h
-    u8g2.setCursor(15, 60);  
+    u8g2.setCursor(15, 56);  
     u8g2.print("espere...");  // Oled.h
   #endif
     u8g2.sendBuffer();
