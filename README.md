@@ -65,6 +65,7 @@ TODO: Sensores RF433 nativo
 _______________
 
 *-LMD 02/05/2026 V2.1.1
+
   - Los Serialx.begin() se inician el SerialWifi.cpp, SerialBluetooth.cpp y SerialAux.cpp  
   - Oled:
     - Rediseño Oled pantalla de encendido
@@ -76,6 +77,7 @@ _______________
     - Añadido IP personalizada.
     - Puerto personalizado.
   - TextCommand revisado para evitar conflicto entre los diferentes tipos de sensores.
+_______________
 
 *-LMD 22/02/2026 V2.1.0
 - Conexión Wifi con ESP01 y NonOs para 4 clientes SerialWifi.h y SerialWifi.cpp
@@ -91,15 +93,18 @@ _______________
   - Oled.cpp se actualiza solo cuando cambian los datos que se muestran.
   - Imagen de inicio, opcional.
   - Algunas partes han sido traducidas a Español ES
+_______________
 
 *-LMD 23/04/2023 V2.0.3
   - Retromodulos S88 añadido (por Philippe -> http://lormedy.free.fr/)
   - Arreglos sonido
   - Comando '#' que muestra el número de locomotoras que puede administrar la central
   - Comando 'I' (solo WiFi) Muestra la IP del dispositivo Wifi WebSocket (https://github.com/Peyutron/DCC-ESP8266-Websocket-Server)
+_______________
 
 *-LMD 05/04/2023 V2.0.2
   - Arreglos en TextCommand.cpp ya que algunos comandos no funcionaban correctamente (comandos 's', 'E' y 'F')
+_______________
 
 *-LMD 01/04/2023 V2.0.1
 - Datos seriales unificados en CommInterface.cpp
@@ -112,9 +117,9 @@ _______________
 - Monitor de consumo 
 
 
-DCCpp modificado por Peyutron. Todos los cambios y montajes estan basados en un circuito general. Es recomendable mierar el datasheet y a los pines de conexión ya que dependeran del fabricante. No nos hacemos responsables de posibles fallos. Todas las modificaciones son bajo tu propia responsabilidad.
+DCCpp modificado por Peyutron. Todos los cambios y montajes estan basados en un circuito general. Es recomendable mirar el datasheet y a los pines de conexión ya que dependeran del fabricante. 
 
-
+<b>No nos hacemos responsables de posibles fallos. Todas las modificaciones son bajo tu propia responsabilidad.</b>
 
 
 License
