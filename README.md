@@ -1,4 +1,4 @@
-# DCCpp_LMD
+# DCCpp LMD
 
 DCCpp LMD Librería DCC++ para Arduino
 
@@ -117,7 +117,7 @@ _______________
 - Monitor de consumo 
 
 
-DCCpp modificado por Peyutron. Todos los cambios y montajes estan basados en un circuito general. Es recomendable mirar el datasheet y a los pines de conexión ya que dependeran del fabricante. 
+Librería DCCpp modificada por Carlos MC. Todos los cambios y montajes estan basados en un circuito general. Es recomendable mirar el datasheet y a los pines de conexión ya que dependeran del fabricante. 
 
 <b>No nos hacemos responsables de posibles fallos. Todas las modificaciones son bajo tu propia responsabilidad.</b>
 
