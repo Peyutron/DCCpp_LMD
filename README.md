@@ -41,9 +41,9 @@ Para instalar la central DCCpp LMD solo hay que tener la librería DCCpp LMD en 
 ![alt text](https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/DCCpp_Mega_oledESP8266Buzzmax471.jpg?raw=true "DCCpp Wifi" )
 
 
-Nos podemos ahorrar el soldar componentes ya que para el módulo <strong>ESP-01</strong> existe un adaptador para tener una conexión Rx/Tx con alimentación a 5V 
+Nos podemos ahorrar el soldar componentes ya que para el módulo <strong>ESP-01</strong> existe un adaptador con el que podemos tener una conexión Rx/Tx con alimentación a 5V 
 
-![alt text](https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/Modulo_serial_ESP8266.jpg?raw=true "Adaptador ESP-01")
+![alt text](https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/Modulo_serial_ESP8266.jpg?raw=true "Adaptador ESP-01"){: height="200" width="200"}
 
 ![alt text](https://github.com/Peyutron/DCCpp_LMD/blob/main/DCCpp_LMD/extras/Images/DCCOledSSD1306_03.png?raw=true "Pantalla Oled I2c")
 
