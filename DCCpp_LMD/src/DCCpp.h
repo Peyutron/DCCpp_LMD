@@ -15,13 +15,13 @@
 #define USE_EEPROM            // Activa la memoria EEPROM.
 #define USE_OUTPUT            // Activa salidas. No compatible con retromodulos S88.
 #define USE_SENSOR         // Activa sensores. No compatible con retromodulos S88.
-//#define USE_S88               // Activa compatibilidad con retromodulos S88.
-#define USE_RF_SENSOR      // Acticva la lectura de sensores RF
+// #define USE_S88               // Activa compatibilidad con retromodulos S88.
+// #define USE_RF_SENSOR      // Acticva la lectura de sensores RF
 // #define DCCPP_DEBUG_MODE   // Muestra información debug en pantalla.
 #define USE_TEXTCOMMAND       // Serial nativo.
-#define USE_SERIALWIFI        // Serial1.
-#define USE_SERIALBLUETOOTH // Serial2. 
-#define USE_SERIALAUX       // Serial3.
+// #define USE_SERIALWIFI        // Serial1.
+// #define USE_SERIALBLUETOOTH // Serial2. 
+// #define USE_SERIALAUX       // Serial3.
 #define USE_OLED              // Pantalla OLED 128x64 i2C.
 // #define USE_SOUND             // Buzzer sonidos varios.
 // #define USE_KEYBOARD          // Teclado y encoder.
